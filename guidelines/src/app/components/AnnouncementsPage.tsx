@@ -2,108 +2,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Calendar, MapPin, Download, Clock, User } from "lucide-react";
 import { EngineeringBackground } from "./EngineeringBackground";
-
-interface Announcement {
-  id: number;
-  title: string;
-  date: string;
-  time?: string;
-  location?: string;
-  description: string;
-  author: string;
-  category: "Dean" | "Department" | "Timetable" | "Venue";
-  hasDocument?: boolean;
-}
+import { useAnnouncements } from "../../hooks/useAnnouncements";
 
 export function AnnouncementsPage() {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
-
-  const announcements: Announcement[] = [
-    {
-      id: 1,
-      title: "First Year Orientation Program",
-      date: "2025-05-28",
-      time: "10:00 AM - 12:00 PM",
-      location: "Main Auditorium",
-      description: "Welcome session for all first-year students. Attendance is mandatory.",
-      author: "Dean of Students",
-      category: "Dean",
-      hasDocument: true,
-    },
-    {
-      id: 2,
-      title: "Lab Session - Physics Practical",
-      date: "2025-05-27",
-      time: "11:00 AM - 11:30 AM",
-      location: "IS Block",
-      description:
-        "YOUR SESSION IS AT: IS Block from 11:00 to 11:30 AM. Click below for venue details and navigation.",
-      author: "Physics Department",
-      category: "Timetable",
-    },
-    {
-      id: 3,
-      title: "Semester Timetable - First Year 2025",
-      date: "2025-05-26",
-      description: "Complete timetable for the first semester has been released. Download PDF for offline access.",
-      author: "Academic Office",
-      category: "Timetable",
-      hasDocument: true,
-    },
-    {
-      id: 4,
-      title: "Mathematics Tutorial - Group A",
-      date: "2025-05-27",
-      time: "02:00 PM - 03:00 PM",
-      location: "CS Block - Room 301",
-      description: "Tutorial session for Group A students. Please bring your notebooks and calculators.",
-      author: "Mathematics Department",
-      category: "Department",
-    },
-    {
-      id: 5,
-      title: "Library Orientation Session",
-      date: "2025-05-29",
-      time: "03:00 PM - 04:00 PM",
-      location: "Central Library",
-      description: "Introduction to library resources and digital databases. All first-year students invited.",
-      author: "Library Administration",
-      category: "Venue",
-    },
-    {
-      id: 6,
-      title: "Workshop on Academic Ethics",
-      date: "2025-05-30",
-      time: "10:00 AM - 12:00 PM",
-      location: "ECE Seminar Hall",
-      description: "Important workshop covering plagiarism, citation practices, and academic integrity.",
-      author: "Dean of Academics",
-      category: "Dean",
-      hasDocument: true,
-    },
-    {
-      id: 7,
-      title: "Computer Lab Access Schedule",
-      date: "2025-05-26",
-      location: "IT Block - Lab 1, 2, 3",
-      description: "Updated schedule for computer lab access hours. Download the venue map and schedule.",
-      author: "IT Department",
-      category: "Venue",
-      hasDocument: true,
-    },
-    {
-      id: 8,
-      title: "Chemistry Practical Batch Schedule",
-      date: "2025-05-27",
-      time: "09:00 AM - 05:00 PM",
-      location: "Chemistry Block",
-      description: "Batch-wise schedule for chemistry practicals. Check your batch timings in the PDF.",
-      author: "Chemistry Department",
-      category: "Timetable",
-      hasDocument: true,
-    },
-  ];
+  const { announcements, getLastUpdated } = useAnnouncements();
 
   const categories = ["All", "Dean", "Department", "Timetable", "Venue"];
 
@@ -116,6 +20,23 @@ export function AnnouncementsPage() {
     navigate(`/map?destination=${encodeURIComponent(location)}`);
   };
 
+  const lastUpdatedTime = getLastUpdated();
+  const getRelativeTime = (isoString: string | null) => {
+    if (!isoString) return null;
+    const date = new Date(isoString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "just now";
+    if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? "s" : ""} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+    if (diffDays < 30) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+    return date.toLocaleDateString();
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <EngineeringBackground />
@@ -124,6 +45,11 @@ export function AnnouncementsPage() {
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Announcements</h1>
           <div className="w-20 h-1 bg-primary mb-4"></div>
           <p className="text-gray-600">Stay updated with the latest circulars and notices</p>
+          {lastUpdatedTime && (
+            <p className="text-sm text-gray-500 mt-2">
+              Last updated by Dean: <span className="font-semibold">{getRelativeTime(lastUpdatedTime)}</span>
+            </p>
+          )}
         </div>
 
         {/* Category Filter */}

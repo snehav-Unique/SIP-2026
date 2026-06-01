@@ -1,8 +1,14 @@
 import { Home, Bell, Map } from "lucide-react";
-import { Link, useLocation } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
+import { useRef, useState } from "react";
+import { DEAN_TOKEN } from "../../config/dean";
 
 export function Navigation() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const clickCountRef = useRef(0);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isUnlocked, setIsUnlocked] = useState(false);
 
   const navItems = [
     { path: "/", label: "Home", icon: Home },
@@ -10,12 +16,36 @@ export function Navigation() {
     { path: "/map", label: "Map", icon: Map },
   ];
 
+  const handleLogoClick = () => {
+    clickCountRef.current += 1;
+
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+    if (clickCountRef.current === 5) {
+      setIsUnlocked(true);
+      navigate(`/dean?token=${DEAN_TOKEN}`);
+      clickCountRef.current = 0;
+      return;
+    }
+
+    timeoutRef.current = setTimeout(() => {
+      clickCountRef.current = 0;
+      setIsUnlocked(false);
+    }, 1000);
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50 border-b border-border">
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
+            <div
+              onClick={handleLogoClick}
+              className={`w-12 h-12 bg-primary rounded-full flex items-center justify-center cursor-pointer transition-all ${
+                isUnlocked ? "ring-2 ring-green-500" : "hover:shadow-lg"
+              }`}
+              title="Click 5 times for a secret 😉"
+            >
               <span className="text-white text-xl font-bold">RV</span>
             </div>
             <div>

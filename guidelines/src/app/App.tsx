@@ -3,6 +3,7 @@ import { Navigation } from "./components/Navigation";
 import { HomePage } from "./components/HomePage";
 import { AnnouncementsPage } from "./components/AnnouncementsPage";
 import { MapPage } from "./components/MapPage";
+import { DeanPage } from "../pages/DeanPage";
 
 function AppContent() {
   return (
@@ -13,6 +14,7 @@ function AppContent() {
           <Route path="/" element={<HomePage />} />
           <Route path="/announcements" element={<AnnouncementsPage />} />
           <Route path="/map" element={<MapPage />} />
+          <Route path="/dean" element={<DeanPage />} />
         </Routes>
       </div>
     </div>
