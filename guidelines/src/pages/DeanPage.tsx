@@ -1,15 +1,12 @@
-import { useState, useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router";
+import { useState } from "react";
+import { useNavigate } from "react-router";
 import { Trash2, Edit2, Plus, X, Check } from "lucide-react";
 import { useAnnouncements } from "../hooks/useAnnouncements";
 import { Announcement } from "../data/announcements";
-import { DEAN_TOKEN } from "../config/dean";
 
 export function DeanPage() {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { announcements, deleteById, updateById, addAnnouncement } = useAnnouncements();
-  const [isAuthorized, setIsAuthorized] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [editForm, setEditForm] = useState<Announcement | null>(null);
@@ -23,35 +20,6 @@ export function DeanPage() {
     category: "Dean",
     hasDocument: false,
   });
-
-  useEffect(() => {
-    const token = searchParams.get("token");
-    if (token === DEAN_TOKEN) {
-      setIsAuthorized(true);
-    }
-  }, [searchParams]);
-
-  if (!isAuthorized) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center px-4">
-        <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">🔒</span>
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
-            <p className="text-gray-600 mb-6">Invalid or missing access token. This page is restricted to administrators only.</p>
-            <button
-              onClick={() => navigate("/")}
-              className="w-full px-4 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors"
-            >
-              Return to Home
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   const handleStartEdit = (announcement: Announcement) => {
     setEditingId(announcement.id);
