@@ -1,4 +1,5 @@
-export const ALLOWED_EMAILS: string[] = [
-  "dean.studentaffairs@rvce.edu.in",
-  "snehav0307@gmail.com",
-];
+const raw = import.meta.env.VITE_ALLOWED_DEANS || "";
+export const ALLOWED_EMAILS: string[] = raw
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);

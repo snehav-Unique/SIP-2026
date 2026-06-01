@@ -2,25 +2,25 @@ import { initializeApp, getApps } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getAnalytics, isSupported } from "firebase/analytics";
 
-// Firebase project config provided by user
+// Read Firebase config from Vite environment variables (VITE_ prefix)
 const firebaseConfig = {
-  apiKey: "AIzaSyDBpkms__YjzaulhdiKav3qWtwXUk2fi30",
-  authDomain: "sip-2026-154e0.firebaseapp.com",
-  projectId: "sip-2026-154e0",
-  storageBucket: "sip-2026-154e0.firebasestorage.app",
-  messagingSenderId: "424700102194",
-  appId: "1:424700102194:web:d2abfa2283808b4a105e2b",
-  measurementId: "G-VXC9688NFC",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "",
 };
 
 if (!getApps().length) {
   initializeApp(firebaseConfig);
 }
 
-// Initialize analytics only in browsers that support it
+// Initialize analytics only in supported browsers
 (async () => {
   try {
-    if (await isSupported()) {
+    if (await isSupported() && firebaseConfig.measurementId) {
       getAnalytics();
     }
   } catch (e) {
