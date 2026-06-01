@@ -3,7 +3,9 @@ import { Navigation } from "./components/Navigation";
 import { HomePage } from "./components/HomePage";
 import { AnnouncementsPage } from "./components/AnnouncementsPage";
 import { MapPage } from "./components/MapPage";
-import { DeanPage } from "../pages/DeanPage";
+import { SecretLoginPage } from "../pages/SecretLoginPage";
+import { DeanDashboard } from "../pages/DeanDashboard";
+import { ProtectedRoute } from "../components/ProtectedRoute";
 
 function AppContent() {
   return (
@@ -14,7 +16,15 @@ function AppContent() {
           <Route path="/" element={<HomePage />} />
           <Route path="/announcements" element={<AnnouncementsPage />} />
           <Route path="/map" element={<MapPage />} />
-          <Route path="/dean" element={<DeanPage />} />
+          <Route path="/sipannouncements/secretlogin" element={<SecretLoginPage />} />
+          <Route
+            path="/sipannouncements/admin"
+            element={
+              <ProtectedRoute>
+                <DeanDashboard />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </div>
     </div>

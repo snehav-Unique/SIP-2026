@@ -1,7 +1,6 @@
 import { Home, Bell, Map } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { useRef, useState } from "react";
-import { DEAN_TOKEN } from "../../config/dean";
 
 export function Navigation() {
   const location = useLocation();
@@ -23,7 +22,7 @@ export function Navigation() {
 
     if (clickCountRef.current === 5) {
       setIsUnlocked(true);
-      navigate(`/dean?token=${DEAN_TOKEN}`);
+      navigate("/sipannouncements/secretlogin");
       clickCountRef.current = 0;
       return;
     }
@@ -31,7 +30,7 @@ export function Navigation() {
     timeoutRef.current = setTimeout(() => {
       clickCountRef.current = 0;
       setIsUnlocked(false);
-    }, 1000);
+    }, 3000);
   };
 
   return (
