@@ -1,4 +1,4 @@
 export const ALLOWED_EMAILS: string[] = [
-  "dean@rvce.edu.in",
-  "yourpersonalgmail@gmail.com",
+  "dean.studentaffairs@rvce.edu.in",
+  "snehav0307@gmail.com",
 ];
