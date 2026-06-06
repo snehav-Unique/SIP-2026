@@ -1,6 +1,7 @@
 import { Home, Bell, Map } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { useRef, useState } from "react";
+import rvceLogo from "../../../RVCE_Logo.png";
 
 export function Navigation() {
   const location = useLocation();
@@ -31,27 +32,27 @@ export function Navigation() {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50 border-b border-border">
-      <div className="max-w-7xl mx-auto px-6 py-4">
+    <nav className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur shadow-sm z-50 border-b border-primary/20">
+      <div className="max-w-7xl mx-auto px-3 py-3 sm:px-5 lg:px-6">
         <div className="flex items-center justify-between">
 
           {/* Left: Logo + Title */}
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <div onClick={handleLogoClick} className="cursor-pointer">
               <img
-                src="/RVCE_logo.png"
+                src={rvceLogo}
                 alt="RVCE Logo"
-                className="w-12 h-12 rounded-full"
+                className="h-10 w-10 rounded-full [filter:brightness(0)_contrast(1.2)] sm:h-12 sm:w-12"
               />
             </div>
-            <div>
-              <h1 className="text-lg font-bold text-gray-900">RV College of Engineering</h1>
-              <p className="text-xs text-gray-600">Student Dashboard</p>
+            <div className="min-w-0">
+              <h1 className="truncate text-sm font-bold text-gray-900 sm:text-lg">RV College of Engineering</h1>
+              <p className="truncate text-[11px] text-gray-600 sm:text-xs">Student Dashboard</p>
             </div>
           </div>
 
           {/* Right: Nav links */}
-          <div className="flex gap-3">
+          <div className="flex shrink-0 gap-1.5 sm:gap-3">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
@@ -59,14 +60,15 @@ export function Navigation() {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                  aria-label={item.label}
+                  className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-all sm:px-4 ${
                     isActive
                       ? "bg-primary text-white shadow-md"
                       : "bg-white text-gray-700 hover:bg-accent border border-border"
                   }`}
                 >
                   <Icon size={18} />
-                  <span className="font-medium">{item.label}</span>
+                  <span className="hidden font-medium sm:inline">{item.label}</span>
                 </Link>
               );
             })}

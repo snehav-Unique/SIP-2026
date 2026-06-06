@@ -1,239 +1,289 @@
 import { useNavigate } from "react-router";
-import { useEffect, useState } from "react";
-import { Calendar, FileText, MapPin, Clock, ChevronDown } from "lucide-react";
-import { EngineeringBackground } from "./EngineeringBackground";
+import {
+  AlertTriangle,
+  Bell,
+  BookOpen,
+  Calendar,
+  ChevronRight,
+  Clock,
+  FileText,
+  GraduationCap,
+  HelpCircle,
+  MapPin,
+  Phone,
+  ShieldCheck,
+  Users,
+} from "lucide-react";
+import AnimatedContent from "../../components/AnimatedContent";
+import CountUp from "../../components/CountUp";
+import SplitText from "../../components/SplitText";
+import { useAnnouncements } from "../../hooks/useAnnouncements";
 
-interface Bubble {
-  id: number;
-  x: number;
-  y: number;
-  size: number;
-  duration: number;
-  delay: number;
-}
+const portalMetrics = [
+  { label: "Notices", value: 8, suffix: "", icon: Bell },
+  { label: "Orientation Events", value: 6, suffix: "", icon: Users },
+  { label: "Campus Venues", value: 12, suffix: "", icon: MapPin },
+  { label: "Support Desks", value: 4, suffix: "", icon: HelpCircle },
+];
+
+const quickAccess = [
+  {
+    title: "Announcements",
+    description: "Circulars, timetable notices, department updates, and dean messages.",
+    icon: FileText,
+    path: "/announcements",
+  },
+  {
+    title: "Campus Map",
+    description: "Locate blocks, seminar halls, auditorium, parking, and common areas.",
+    icon: MapPin,
+    path: "/map",
+  },
+  {
+    title: "Academic Calendar",
+    description: "Key semester milestones, induction sessions, holidays, and assessments.",
+    icon: Calendar,
+    path: "/announcements",
+  },
+  {
+    title: "Student Resources",
+    description: "Department contacts, forms, first-year guidance, and helpdesk links.",
+    icon: BookOpen,
+    path: "/announcements",
+  },
+];
+
+const scheduleItems = [
+  { time: "09:30 AM", title: "Document Verification", location: "Admin Block" },
+  { time: "10:30 AM", title: "Orientation Address", location: "Main Auditorium" },
+  { time: "12:00 PM", title: "Department Briefing", location: "Assigned Blocks" },
+  { time: "02:00 PM", title: "Campus Familiarisation", location: "Main Gate" },
+];
+
+const importantDates = [
+  { date: "28 May", label: "Orientation Program" },
+  { date: "30 May", label: "ID Card Verification" },
+  { date: "02 Jun", label: "First Semester Begins" },
+  { date: "07 Jun", label: "Library Enrollment" },
+];
+
+const resourceCards = [
+  { label: "Parent Helpdesk", value: "+91 80 6818 8181", icon: Phone },
+  { label: "Student Affairs", value: "Dean Office, Admin Block", icon: ShieldCheck },
+  { label: "Emergency Contact", value: "Security Desk, Main Gate", icon: AlertTriangle },
+];
 
 export function HomePage() {
   const navigate = useNavigate();
-  const [bubbles, setBubbles] = useState<Bubble[]>([]);
-
-  useEffect(() => {
-    // Generate floating bubbles in a pleasing grid pattern
-    const newBubbles: Bubble[] = [];
-    const cols = 6;
-    const rows = 4;
-    let id = 0;
-
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
-        // Skip some positions for variation
-        if (Math.random() > 0.65) continue;
-
-        const baseX = (col / (cols - 1)) * 100;
-        const baseY = (row / (rows - 1)) * 100;
-
-        // Add slight variation to avoid perfect grid
-        const offsetX = (Math.random() - 0.5) * 15;
-        const offsetY = (Math.random() - 0.5) * 15;
-
-        newBubbles.push({
-          id: id++,
-          x: Math.max(5, Math.min(95, baseX + offsetX)),
-          y: Math.max(5, Math.min(95, baseY + offsetY)),
-          size: 80 + Math.random() * 140,
-          duration: 15 + Math.random() * 15,
-          delay: (row + col) * 0.5,
-        });
-      }
-    }
-
-    setBubbles(newBubbles);
-  }, []);
-
-  const quickStats = [
-    { label: "Today's Classes", value: "4", icon: Calendar },
-    { label: "Announcements", value: "8", icon: FileText },
-    { label: "Active Venues", value: "12", icon: MapPin },
-    { label: "Next Class", value: "11:00 AM", icon: Clock },
-  ];
+  const { announcements } = useAnnouncements();
+  const recentAnnouncements = announcements.slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Full Screen Hero Section */}
-      <section className="h-screen relative overflow-hidden bg-white flex items-center justify-center">
-        {/* Floating Bubbles Background */}
-        <div className="absolute inset-0 overflow-hidden z-0">
-          {bubbles.map((bubble) => (
-            <div
-              key={bubble.id}
-              className="absolute rounded-full"
-              style={{
-                left: `${bubble.x}%`,
-                top: `${bubble.y}%`,
-                width: `${bubble.size}px`,
-                height: `${bubble.size}px`,
-                background: `radial-gradient(circle at 30% 30%, rgba(255, 237, 213, 0.95), rgba(251, 146, 60, 0.7), rgba(249, 115, 22, 0.3))`,
-                filter: 'blur(25px)',
-                animation: `floatBubble ${bubble.duration}s ease-in-out infinite`,
-                animationDelay: `${bubble.delay}s`,
-                boxShadow: '0 8px 32px rgba(249, 115, 22, 0.15)',
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Soft Orange Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-50/30 via-white to-orange-50/30 z-0"></div>
-
-        {/* Main Content */}
-        <div className="relative z-10 text-center px-6 max-w-5xl mx-auto">
-          <div className="mb-8">
-            <div className="inline-block px-6 py-2 bg-primary/10 border-2 border-primary rounded-full mb-6">
-              <span className="text-primary font-semibold">Welcome to RV College of Engineering</span>
-            </div>
-          </div>
-
-          <h1 className="text-7xl md:text-8xl font-bold text-gray-900 mb-6 leading-tight">
-            FIRST YEAR
-            <br />
-            <span className="text-primary">STUDENTS</span>
-          </h1>
-
-          <div className="text-8xl md:text-9xl font-bold text-primary mb-8 relative">
-            2026
-            <div className="absolute -top-4 -right-4 w-24 h-24 bg-primary/20 rounded-full blur-2xl"></div>
-          </div>
-
-          <p className="text-xl text-gray-700 max-w-3xl mx-auto mb-12 leading-relaxed">
-            Welcome, first-year students and parents. Access the latest circulars, venue details,
-            timetables, and essential information for the 2026 batch.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onClick={() => navigate("/announcements")}
-              className="px-8 py-4 bg-primary text-white rounded-lg font-semibold hover:bg-[#fb923c] transition-colors shadow-lg"
-            >
-              View Announcements
-            </button>
-            <button
-              onClick={() => navigate("/map")}
-              className="px-8 py-4 bg-white text-primary border-2 border-primary rounded-lg font-semibold hover:bg-primary hover:text-white transition-colors"
-            >
-              Explore Campus Map
-            </button>
-          </div>
-
-          {/* Scroll Indicator */}
-          <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 animate-bounce">
-            <ChevronDown className="text-primary" size={32} />
-            <p className="text-sm text-gray-600 mt-2">Scroll to explore</p>
-          </div>
-        </div>
-
-        {/* CSS Animation */}
-        <style>{`
-          @keyframes floatBubble {
-            0%, 100% {
-              transform: translate(0, 0) scale(1);
-              opacity: 0.85;
-            }
-            25% {
-              transform: translate(25px, -35px) scale(1.1);
-              opacity: 1;
-            }
-            50% {
-              transform: translate(-25px, 35px) scale(0.9);
-              opacity: 0.9;
-            }
-            75% {
-              transform: translate(35px, 15px) scale(1.05);
-              opacity: 0.95;
-            }
-          }
-        `}</style>
-      </section>
-
-      {/* Content Below Fold */}
-      <section className="bg-white py-20 px-6 relative">
-        {/* Engineering Background for Content Section */}
-        <EngineeringBackground />
-        <div className="relative z-10 max-w-7xl mx-auto">
-          {/* Quick Stats */}
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900 mb-3">Quick Overview</h2>
-            <div className="w-20 h-1 bg-primary mx-auto"></div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
-            {quickStats.map((stat, index) => {
-              const Icon = stat.icon;
-              return (
-                <div
-                  key={stat.label}
-                  className="bg-white rounded-xl p-8 border-2 border-gray-200 hover:border-primary hover:shadow-xl transition-all group"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary transition-colors">
-                    <Icon size={28} className="text-primary group-hover:text-white transition-colors" />
+    <div className="min-h-screen px-3 py-4 text-slate-900 sm:px-5 lg:px-6">
+      <div className="mx-auto max-w-7xl space-y-5">
+        <AnimatedContent distance={18} duration={0.55} threshold={0.05}>
+          <section className="rounded-lg border border-primary/20 bg-white/95 p-4 shadow-sm sm:p-5 lg:p-6">
+            <div className="grid gap-5 lg:grid-cols-[1.25fr_0.75fr] lg:items-center">
+              <div>
+                <div className="mb-3 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-wide text-primary">
+                  <GraduationCap size={16} />
+                  RV College of Engineering
+                  <span className="rounded border border-primary/20 bg-primary/10 px-2 py-0.5 normal-case tracking-normal">
+                    First Year Portal 2025
+                  </span>
+                </div>
+                <SplitText
+                  text="Student Information Dashboard"
+                  tag="h1"
+                  splitType="words"
+                  textAlign="left"
+                  delay={40}
+                  duration={0.7}
+                  className="block text-2xl font-bold leading-tight text-slate-950 sm:text-3xl lg:text-4xl"
+                />
+                <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
+                  A single place for first-year students and parents to review notices, schedules,
+                  campus locations, important dates, and support contacts.
+                </p>
+              </div>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Today</p>
+                    <p className="text-lg font-bold text-slate-950">Orientation Desk</p>
                   </div>
-                  <h3 className="text-4xl font-bold text-gray-900 mb-2">{stat.value}</h3>
-                  <p className="text-gray-600 font-medium">{stat.label}</p>
+                  <Clock className="text-primary" size={26} />
                 </div>
-              );
-            })}
-          </div>
-
-          {/* Quick Access Cards */}
-          <div className="grid md:grid-cols-2 gap-8">
-            <div
-              onClick={() => navigate("/announcements")}
-              className="bg-white rounded-2xl p-10 border-2 border-gray-200 hover:border-primary hover:shadow-2xl transition-all cursor-pointer group"
-            >
-              <div className="flex items-start justify-between mb-6">
-                <div className="flex-1">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-3 group-hover:text-primary transition-colors">
-                    Latest Updates
-                  </h2>
-                  <p className="text-gray-600 text-lg">
-                    View circulars, timetables, and important notices from the dean and departments
-                  </p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-slate-600">Next session</span>
+                    <span className="font-semibold text-slate-950">10:30 AM</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-slate-600">Venue</span>
+                    <span className="font-semibold text-slate-950">Main Auditorium</span>
+                  </div>
+                  <button
+                    onClick={() => navigate("/map?destination=Main%20Auditorium")}
+                    className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-orange-600"
+                  >
+                    <MapPin size={16} />
+                    Open Venue Map
+                  </button>
                 </div>
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary transition-colors">
-                  <FileText className="text-primary group-hover:text-white transition-colors" size={32} />
-                </div>
-              </div>
-              <div className="flex items-center gap-2 text-primary font-semibold text-lg">
-                <span>Explore Announcements</span>
-                <span className="transform group-hover:translate-x-2 transition-transform">→</span>
               </div>
             </div>
+          </section>
+        </AnimatedContent>
 
-            <div
-              onClick={() => navigate("/map")}
-              className="bg-primary rounded-2xl p-10 hover:shadow-2xl transition-all cursor-pointer group text-white relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20"></div>
-              <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full -ml-16 -mb-16"></div>
-
-              <div className="relative flex items-start justify-between mb-6">
-                <div className="flex-1">
-                  <h2 className="text-3xl font-bold mb-3">Campus Navigation</h2>
-                  <p className="text-white/90 text-lg">
-                    Find your way around the college campus with interactive maps and directions
+        <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {portalMetrics.map((metric, index) => {
+            const Icon = metric.icon;
+            return (
+              <AnimatedContent key={metric.label} distance={22} delay={index * 0.06} duration={0.55}>
+                <div className="rounded-lg border border-slate-200 bg-white/95 p-4 shadow-sm">
+                  <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <Icon size={19} />
+                  </div>
+                  <p className="text-2xl font-bold text-slate-950 sm:text-3xl">
+                    <CountUp to={metric.value} duration={1.4} />
+                    {metric.suffix}
                   </p>
+                  <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm">{metric.label}</p>
                 </div>
-                <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors">
-                  <MapPin size={32} />
+              </AnimatedContent>
+            );
+          })}
+        </section>
+
+        <div className="grid gap-5 lg:grid-cols-[1.5fr_0.9fr]">
+          <AnimatedContent distance={24} duration={0.6}>
+            <section className="rounded-lg border border-slate-200 bg-white/95 p-4 shadow-sm sm:p-5">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-bold text-slate-950">Recent Announcements</h2>
+                  <p className="text-sm text-slate-500">Latest circulars and notices from RVCE offices.</p>
                 </div>
+                <button
+                  onClick={() => navigate("/announcements")}
+                  className="flex items-center gap-1 rounded-lg border border-primary/30 bg-white px-3 py-2 text-sm font-semibold text-primary hover:bg-primary/10"
+                >
+                  View all
+                  <ChevronRight size={16} />
+                </button>
               </div>
-              <div className="relative flex items-center gap-2 font-semibold text-lg">
-                <span>Open Interactive Map</span>
-                <span className="transform group-hover:translate-x-2 transition-transform">→</span>
+              <div className="divide-y divide-slate-200">
+                {recentAnnouncements.map((announcement) => (
+                  <button
+                    key={announcement.id}
+                    onClick={() => navigate("/announcements")}
+                    className="grid w-full gap-2 py-3 text-left sm:grid-cols-[1fr_auto] sm:items-center"
+                  >
+                    <div>
+                      <div className="mb-1 flex flex-wrap items-center gap-2">
+                        <span className="rounded bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                          {announcement.category}
+                        </span>
+                        <span className="text-xs text-slate-500">{new Date(announcement.date).toLocaleDateString()}</span>
+                      </div>
+                      <h3 className="font-semibold text-slate-950">{announcement.title}</h3>
+                      <p className="mt-1 line-clamp-2 text-sm text-slate-600">{announcement.description}</p>
+                    </div>
+                    {announcement.location && (
+                      <span className="flex items-center gap-1 text-sm font-medium text-slate-500">
+                        <MapPin size={15} className="text-primary" />
+                        {announcement.location}
+                      </span>
+                    )}
+                  </button>
+                ))}
               </div>
-            </div>
-          </div>
+            </section>
+          </AnimatedContent>
+
+          <AnimatedContent distance={24} delay={0.08} duration={0.6}>
+            <section className="rounded-lg border border-slate-200 bg-white/95 p-4 shadow-sm sm:p-5">
+              <h2 className="text-lg font-bold text-slate-950">Orientation Schedule</h2>
+              <p className="mb-4 text-sm text-slate-500">Primary sessions for reporting day.</p>
+              <div className="space-y-3">
+                {scheduleItems.map((item) => (
+                  <div key={`${item.time}-${item.title}`} className="grid grid-cols-[84px_1fr] gap-3">
+                    <div className="rounded-lg border border-primary/20 bg-primary/10 px-2 py-2 text-center text-sm font-bold text-primary">
+                      {item.time}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-950">{item.title}</p>
+                      <p className="text-sm text-slate-500">{item.location}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </AnimatedContent>
         </div>
-      </section>
+
+        <section className="grid gap-5 lg:grid-cols-[1fr_1fr]">
+          <AnimatedContent distance={24} duration={0.6}>
+            <div className="rounded-lg border border-slate-200 bg-white/95 p-4 shadow-sm sm:p-5">
+              <h2 className="text-lg font-bold text-slate-950">Quick Access</h2>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {quickAccess.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.title}
+                      onClick={() => navigate(item.path)}
+                      className="rounded-lg border border-slate-200 bg-white p-4 text-left transition-all hover:border-primary hover:shadow-md"
+                    >
+                      <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                        <Icon size={18} />
+                      </div>
+                      <h3 className="font-bold text-slate-950">{item.title}</h3>
+                      <p className="mt-1 text-sm leading-5 text-slate-600">{item.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </AnimatedContent>
+
+          <AnimatedContent distance={24} delay={0.08} duration={0.6}>
+            <div className="grid gap-5">
+              <section className="rounded-lg border border-slate-200 bg-white/95 p-4 shadow-sm sm:p-5">
+                <h2 className="text-lg font-bold text-slate-950">Important Dates</h2>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {importantDates.map((item) => (
+                    <div key={item.label} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      <p className="text-sm font-bold text-primary">{item.date}</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-800">{item.label}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section className="rounded-lg border border-slate-200 bg-white/95 p-4 shadow-sm sm:p-5">
+                <h2 className="text-lg font-bold text-slate-950">Support Contacts</h2>
+                <div className="mt-4 space-y-3">
+                  {resourceCards.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <div key={item.label} className="flex items-start gap-3">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                          <Icon size={18} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-950">{item.label}</p>
+                          <p className="text-sm text-slate-600">{item.value}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            </div>
+          </AnimatedContent>
+        </section>
+      </div>
     </div>
   );
 }

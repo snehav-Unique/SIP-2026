@@ -127,7 +127,7 @@ export function DeanDashboard() {
 
   
   return (
-    <div className="min-h-screen bg-gray-50 px-6 py-8">
+    <div className="min-h-screen px-6 py-8">
       <div className="max-w-6xl mx-auto">
 
         {/* Header */}
@@ -137,7 +137,7 @@ export function DeanDashboard() {
             <div className="w-16 h-1 bg-primary mt-2"></div>
           </div>
           <div className="flex items-center gap-4">
-            <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+            <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
               {method === "google" ? "Google" : "Emergency"}
             </span>
 
@@ -241,7 +241,7 @@ export function DeanDashboard() {
                 <button
                   onClick={handleCreate}
                   disabled={isLoading}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50"
                 >
                   <Check size={16} />
                   {isLoading ? "Creating..." : "Create"}
@@ -271,7 +271,7 @@ export function DeanDashboard() {
             announcements.map((a) =>
               editingId === String(a.id) && editForm ? (
                 // Edit mode
-                <div key={a.id} className="bg-white p-6 rounded-xl shadow-md border-2 border-blue-200">
+                <div key={a.id} className="bg-white p-6 rounded-xl shadow-md border-2 border-primary/30">
                   <h3 className="font-bold text-gray-900 mb-3">Editing: {a.title}</h3>
                   <div className="space-y-3">
                     <input
@@ -336,7 +336,7 @@ export function DeanDashboard() {
                       <button
                         onClick={handleSaveEdit}
                         disabled={isLoading}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50"
                       >
                         <Check size={16} />
                         {isLoading ? "Saving..." : "Save"}
@@ -360,7 +360,7 @@ export function DeanDashboard() {
                         {a.category}
                       </span>
                       {a.hasDocument && (
-                        <span className="px-2 py-0.5 bg-blue-100 text-blue-600 rounded-full text-xs font-medium">
+                        <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-medium">
                           📄 PDF
                         </span>
                       )}
@@ -377,7 +377,7 @@ export function DeanDashboard() {
                     <button
                       onClick={() => handleStartEdit(a)}
                       disabled={isLoading}
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
+                      className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors disabled:opacity-50"
                     >
                       <Edit2 size={18} />
                     </button>

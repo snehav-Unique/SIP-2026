@@ -6,12 +6,14 @@ import { MapPage } from "./components/MapPage";
 import { SecretLoginPage } from "../pages/SecretLoginPage";
 import { DeanDashboard } from "../pages/DeanDashboard";
 import { ProtectedRoute } from "../components/ProtectedRoute";
+import { DotGrid } from "./components/DotGrid";
 
 function AppContent() {
   return (
-    <div className="min-h-screen">
+    <div className="relative min-h-screen overflow-hidden bg-white">
+      <DotGrid />
       <Navigation />
-      <div className="pt-20">
+      <main className="relative z-10 pt-20">
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/announcements" element={<AnnouncementsPage />} />
@@ -26,7 +28,7 @@ function AppContent() {
             }
           />
         </Routes>
-      </div>
+      </main>
     </div>
   );
 }

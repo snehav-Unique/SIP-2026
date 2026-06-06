@@ -84,7 +84,7 @@ export function CalendarWithTime({
 
       {/* Display selected date and time */}
       {date && (
-        <p className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
+        <p className="text-sm text-gray-700 bg-primary/10 border border-primary/20 p-3 rounded-lg">
           <strong>Selected:</strong> {date.toLocaleDateString()} at {timeValue}
         </p>
       )}

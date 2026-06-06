@@ -29,15 +29,15 @@ export function SecretLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-      <div className="max-w-xl w-full bg-white rounded-xl shadow-lg p-6">
+    <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="max-w-xl w-full bg-white rounded-xl shadow-lg border-2 border-primary/15 p-6">
         <h1 className="text-2xl font-bold mb-4">Dean Access</h1>
         <p className="text-sm text-gray-600 mb-6">Sign in with your Google account or use the emergency password.</p>
 
         <div className="space-y-4">
           <button
             onClick={handleGoogle}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700"
+            className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-orange-600"
           >
             Sign in with Google
           </button>

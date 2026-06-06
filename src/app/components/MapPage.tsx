@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router";
 import { MapPin, Navigation2, Info, X } from "lucide-react";
-import { EngineeringBackground } from "./EngineeringBackground";
 
 interface Building {
   id: string;
@@ -10,7 +9,6 @@ interface Building {
   y: number;
   width: number;
   height: number;
-  color: string;
 }
 
 export function MapPage() {
@@ -19,18 +17,18 @@ export function MapPage() {
   const [showRoute, setShowRoute] = useState(false);
 
   const buildings: Building[] = [
-    { id: "main-gate", name: "Main Gate", x: 50, y: 50, width: 80, height: 40, color: "#6b7280" },
-    { id: "admin", name: "Administration Block", x: 200, y: 50, width: 120, height: 80, color: "#3b82f6" },
-    { id: "cs-block", name: "CS Block", x: 400, y: 60, width: 100, height: 100, color: "#10b981" },
-    { id: "is-block", name: "IS Block", x: 550, y: 60, width: 100, height: 100, color: "#f59e0b" },
-    { id: "ece-block", name: "ECE Seminar Hall", x: 200, y: 200, width: 110, height: 90, color: "#8b5cf6" },
-    { id: "library", name: "Central Library", x: 400, y: 220, width: 130, height: 100, color: "#06b6d4" },
-    { id: "auditorium", name: "Main Auditorium", x: 580, y: 230, width: 140, height: 110, color: "#ec4899" },
-    { id: "canteen", name: "Canteen", x: 50, y: 200, width: 90, height: 60, color: "#f97316" },
-    { id: "chemistry", name: "Chemistry Block", x: 50, y: 320, width: 100, height: 80, color: "#14b8a6" },
-    { id: "it-block", name: "IT Block", x: 220, y: 350, width: 100, height: 90, color: "#a855f7" },
-    { id: "playground", name: "Playground", x: 400, y: 380, width: 200, height: 100, color: "#84cc16" },
-    { id: "parking", name: "Parking Area", x: 650, y: 400, width: 120, height: 80, color: "#64748b" },
+    { id: "main-gate", name: "Main Gate", x: 50, y: 50, width: 80, height: 40 },
+    { id: "admin", name: "Administration Block", x: 200, y: 50, width: 120, height: 80 },
+    { id: "cs-block", name: "CS Block", x: 400, y: 60, width: 100, height: 100 },
+    { id: "is-block", name: "IS Block", x: 550, y: 60, width: 100, height: 100 },
+    { id: "ece-block", name: "ECE Seminar Hall", x: 200, y: 200, width: 110, height: 90 },
+    { id: "library", name: "Central Library", x: 400, y: 220, width: 130, height: 100 },
+    { id: "auditorium", name: "Main Auditorium", x: 580, y: 230, width: 140, height: 110 },
+    { id: "canteen", name: "Canteen", x: 50, y: 200, width: 90, height: 60 },
+    { id: "chemistry", name: "Chemistry Block", x: 50, y: 320, width: 100, height: 80 },
+    { id: "it-block", name: "IT Block", x: 220, y: 350, width: 100, height: 90 },
+    { id: "playground", name: "Playground", x: 400, y: 380, width: 200, height: 100 },
+    { id: "parking", name: "Parking Area", x: 650, y: 400, width: 120, height: 80 },
   ];
 
   // Current location (for demo purposes, set to Main Gate)
@@ -48,8 +46,7 @@ export function MapPage() {
   }, [destinationBuilding]);
 
   return (
-    <div className="min-h-screen bg-white">
-      <EngineeringBackground />
+    <div className="min-h-screen">
       <div className="relative z-10 max-w-7xl mx-auto px-6 py-8">
         <div className="mb-6">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Campus Map</h1>

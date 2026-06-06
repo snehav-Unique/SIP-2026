@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Calendar, MapPin, Download, Clock, User } from "lucide-react";
-import { EngineeringBackground } from "./EngineeringBackground";
 import { useAnnouncements } from "../../hooks/useAnnouncements";
 
 export function AnnouncementsPage() {
@@ -38,8 +37,7 @@ export function AnnouncementsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <EngineeringBackground />
+    <div className="min-h-screen">
       <div className="relative z-10 max-w-7xl mx-auto px-6 py-8">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Announcements</h1>
@@ -83,7 +81,7 @@ export function AnnouncementsPage() {
                       {announcement.category}
                     </span>
                     {announcement.hasDocument && (
-                      <span className="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm font-medium flex items-center gap-1">
+                      <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium flex items-center gap-1">
                         <Download size={14} />
                         PDF Available
                       </span>
