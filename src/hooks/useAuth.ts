@@ -9,10 +9,11 @@ import { auth, googleProvider } from "../config/firebase";
 import { ALLOWED_EMAILS } from "../config/allowedDeans";
 import { EMERGENCY_PASSWORD } from "../config/emergencyAccess";
 
-type Status = "idle" | "loading" | "authorized" | "unauthorized";
+
+type Status = "idle" | "checking" | "loading" | "authorized" | "unauthorized";
 
 export function useAuth() {
-  const [status, setStatus] = useState<Status>("idle");
+  const [status, setStatus] = useState<Status>("checking");
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [method, setMethod] = useState<"google" | "emergency" | null>(null);
 
@@ -76,17 +77,18 @@ export function useAuth() {
     setStatus("unauthorized");
     return { ok: false, message: "Invalid password" };
   };
-
-  const logout = async () => {
-    try {
-      await signOut(auth);
-    } catch {
-      // ignore
-    }
-    localStorage.removeItem("isAdmin");
-    setStatus("idle");
-    setMethod(null);
-  };
+const logout = async () => {
+  setStatus("checking"); // prevent flicker while signing out
+  try {
+    await signOut(auth);
+  } catch {
+    // ignore
+  }
+  localStorage.removeItem("isAdmin");
+  setStatus("idle");
+  setMethod(null);
+  setUser(null);
+};
 
   const isAdmin = status === "authorized";
 

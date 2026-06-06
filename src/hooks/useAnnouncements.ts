@@ -1,48 +1,66 @@
 import { useState, useEffect } from "react";
+import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import { db } from "../config/firebase";
 import { Announcement, defaultAnnouncements } from "../data/announcements";
 
-const STORAGE_KEY = "rvce_announcements";
 const LAST_UPDATED_KEY = "rvce_announcements_updated";
 
 export function useAnnouncements() {
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>(defaultAnnouncements);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Initialize from localStorage or defaults
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        setAnnouncements(JSON.parse(saved));
-      } catch {
-        setAnnouncements(defaultAnnouncements);
-      }
-    } else {
+    setLoading(true);
+    try {
+      const announcementsCollection = collection(db, "announcements");
+      const q = query(announcementsCollection, orderBy("createdAt", "desc"));
+const unsubscribe = onSnapshot(
+  q,
+  (snapshot) => {
+    if (snapshot.empty) {
+      // No Firestore docs at all — show defaults as placeholder
       setAnnouncements(defaultAnnouncements);
+    } else {
+      // Firestore has data — show ONLY Firestore docs, ignore defaults entirely
+      const firestoreData: Announcement[] = snapshot.docs.map((doc) => {
+        const d = doc.data();
+        return {
+          id: doc.id,
+          title: d.title || "",
+          date: d.date || "",
+          time: d.time || "",
+          location: d.location || "",
+          description: d.description || "",
+          author: d.author || "",
+          category: d.category || "Dean",
+          hasDocument: d.hasDocument || false,
+        };
+      });
+      setAnnouncements(firestoreData);
+    }
+    setLoading(false);
+    localStorage.setItem(LAST_UPDATED_KEY, new Date().toISOString());
+  },
+  (err) => {
+    console.error("Firestore snapshot error:", err);
+    setError("Failed to load announcements");
+    setAnnouncements(defaultAnnouncements);
+    setLoading(false);
+  }
+);
+      return () => unsubscribe();
+    } catch (err) {
+      console.error("Error setting up announcements listener:", err);
+      setError("Failed to load announcements");
+      setAnnouncements(defaultAnnouncements);
+      setLoading(false);
     }
   }, []);
 
-  const save = (updated: Announcement[]) => {
-    setAnnouncements(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    localStorage.setItem(LAST_UPDATED_KEY, new Date().toISOString());
-  };
-
-  const deleteById = (id: number) => {
-    const updated = announcements.filter((a) => a.id !== id);
-    save(updated);
-  };
-
-  const updateById = (id: number, updated: Announcement) => {
-    const newList = announcements.map((a) => (a.id === id ? updated : a));
-    save(newList);
-  };
-
-  const addAnnouncement = (announcement: Omit<Announcement, "id">) => {
-    const newId = Math.max(...announcements.map((a) => a.id), 0) + 1;
-    const newAnnouncement: Announcement = { ...announcement, id: newId };
-    save([newAnnouncement, ...announcements]);
-    return newId;
-  };
+  const deleteById = async (id: string | number) => id;
+  const updateById = async (id: string | number, updated: Announcement) => id;
+  const addAnnouncement = async (announcement: Omit<Announcement, "id">) => 0;
 
   const getLastUpdated = (): string | null => {
     return localStorage.getItem(LAST_UPDATED_KEY);
@@ -50,10 +68,11 @@ export function useAnnouncements() {
 
   return {
     announcements,
-    save,
     deleteById,
     updateById,
     addAnnouncement,
     getLastUpdated,
+    loading,
+    error,
   };
 }

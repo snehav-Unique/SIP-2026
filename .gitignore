@@ -1,7 +1,29 @@
-node_modules/
-dist/
+# Environment variables
 .env
-package-lock.json
+.env.local
+.env.development
+.env.production
+.env.*
+
+# Firebase/sensitive config
+src/config/allowedDeans.ts
+src/config/emergencyAccess.ts
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Editor
+.vscode/
+.idea/
+
+# OS
 .DS_Store
-/.idea/
-/.vscode/
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
