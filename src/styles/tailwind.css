@@ -2,3 +2,7 @@
 @source '../**/*.{js,ts,jsx,tsx}';
 
 @import 'tw-animate-css';
+
+@utility font-display {
+  font-family: 'Syne', 'Plus Jakarta Sans', system-ui, sans-serif;
+}

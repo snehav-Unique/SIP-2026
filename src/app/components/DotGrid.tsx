@@ -1,147 +1,323 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, memo } from 'react';
+
+const TWO_PI = Math.PI * 2;
 
 interface Dot {
-  baseX: number;
-  baseY: number;
-  pulse: number;
-  delay: number;
-}
-
-interface PointerState {
+  ax: number;
+  ay: number;
+  sx: number;
+  sy: number;
+  vx: number;
+  vy: number;
   x: number;
   y: number;
-  active: boolean;
 }
 
-const DOT_SPACING = 34;
-const INTERACTION_RADIUS = 150;
-const PRIMARY_ORANGE = "249, 115, 22";
+interface DotFieldProps {
+  dotRadius?: number;
+  dotSpacing?: number;
+  cursorRadius?: number;
+  cursorForce?: number;
+  bulgeOnly?: boolean;
+  bulgeStrength?: number;
+  glowRadius?: number;
+  sparkle?: boolean;
+  waveAmplitude?: number;
+  gradientFrom?: string;
+  gradientTo?: string;
+  glowColor?: string;
+  [key: string]: unknown;
+}
 
-export function DotGrid() {
+const DotField = memo(({
+  dotRadius = 1.5,
+  dotSpacing = 14,
+  cursorRadius = 500,
+  cursorForce = 0.1,
+  bulgeOnly = true,
+  bulgeStrength = 67,
+  glowRadius = 160,
+  sparkle = false,
+  waveAmplitude = 0,
+  gradientFrom = 'rgba(168, 85, 247, 0.35)',
+  gradientTo = 'rgba(180, 151, 207, 0.25)',
+  glowColor = '#120F17',
+  ...rest
+}: DotFieldProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const pointerRef = useRef<PointerState>({
-    x: -1000,
-    y: -1000,
-    active: false,
-  });
+  const svgRef = useRef<SVGSVGElement>(null);
+  const glowRef = useRef<SVGCircleElement>(null);
+  const dotsRef = useRef<Dot[]>([]);
+  const mouseRef = useRef({ x: -9999, y: -9999, speed: 0 });
+  const rafRef = useRef<number | null>(null);
+  const sizeRef = useRef({ w: 0, h: 0, offsetX: 0, offsetY: 0 });
+  const glowOpacity = useRef(0);
+  const engagement = useRef(0);
+  const propsRef = useRef<Record<string, unknown>>({});
+  propsRef.current = { dotRadius, dotSpacing, cursorRadius, cursorForce, bulgeOnly, bulgeStrength, sparkle, waveAmplitude, gradientFrom, gradientTo };
+  const rebuildRef = useRef<(() => void) | null>(null);
+  const glowIdRef = useRef(`dot-field-glow-${Math.random().toString(36).slice(2, 9)}`);
 
   useEffect(() => {
     const canvas = canvasRef.current;
+    const glowEl = glowRef.current;
     if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let resizeTimer: ReturnType<typeof setTimeout>;
+    let cachedGrad: CanvasGradient | null = null;
 
-    let animationFrameId = 0;
-    let dots: Dot[] = [];
-    let time = 0;
+    function resize() {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(doResize, 100);
+    }
 
-    const buildGrid = () => {
-      const pixelRatio = window.devicePixelRatio || 1;
-      canvas.width = window.innerWidth * pixelRatio;
-      canvas.height = window.innerHeight * pixelRatio;
-      canvas.style.width = `${window.innerWidth}px`;
-      canvas.style.height = `${window.innerHeight}px`;
-      ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    function doResize() {
+      const rect = canvas!.parentElement!.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
 
-      const columns = Math.ceil(window.innerWidth / DOT_SPACING) + 2;
-      const rows = Math.ceil(window.innerHeight / DOT_SPACING) + 2;
-      dots = [];
+      canvas!.width = w * dpr;
+      canvas!.height = h * dpr;
+      canvas!.style.width = `${w}px`;
+      canvas!.style.height = `${h}px`;
+      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      sizeRef.current = {
+        w,
+        h,
+        offsetX: rect.left + window.scrollX,
+        offsetY: rect.top + window.scrollY,
+      };
+
+      // Rebuild cached gradient on resize
+      const p = propsRef.current;
+      cachedGrad = ctx!.createLinearGradient(0, 0, w, h);
+      cachedGrad.addColorStop(0, p.gradientFrom as string);
+      cachedGrad.addColorStop(1, p.gradientTo as string);
+
+      buildDots(w, h);
+    }
+
+    function buildDots(w: number, h: number) {
+      const p = propsRef.current;
+      const step = (p.dotRadius as number) + (p.dotSpacing as number);
+      const cols = Math.floor(w / step);
+      const rows = Math.floor(h / step);
+      const padX = (w % step) / 2;
+      const padY = (h % step) / 2;
+      const dots: Dot[] = new Array(rows * cols);
+      let idx = 0;
 
       for (let row = 0; row < rows; row++) {
-        for (let column = 0; column < columns; column++) {
-          dots.push({
-            baseX: column * DOT_SPACING - DOT_SPACING,
-            baseY: row * DOT_SPACING - DOT_SPACING,
-            pulse: Math.random() * Math.PI * 2,
-            delay: (row + column) * 0.045,
-          });
+        for (let col = 0; col < cols; col++) {
+          const ax = padX + col * step + step / 2;
+          const ay = padY + row * step + step / 2;
+          dots[idx++] = { ax, ay, sx: ax, sy: ay, vx: 0, vy: 0, x: ax, y: ay };
         }
       }
-    };
+      dotsRef.current = dots;
+    }
 
-    const updatePointer = (x: number, y: number) => {
-      pointerRef.current = { x, y, active: true };
-    };
+    function onMouseMove(e: MouseEvent) {
+      const s = sizeRef.current;
+      const m = mouseRef.current;
+      const nx = e.pageX - s.offsetX;
+      const ny = e.pageY - s.offsetY;
+      const dx = m.x - nx;
+      const dy = m.y - ny;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      m.speed += (dist - m.speed) * 0.5;
+      if (m.speed < 0.001) m.speed = 0;
+      m.x = nx;
+      m.y = ny;
+    }
 
-    const handlePointerMove = (event: PointerEvent) => {
-      updatePointer(event.clientX, event.clientY);
-    };
+    let frameCount = 0;
 
-    const handleTouchMove = (event: TouchEvent) => {
-      const touch = event.touches[0];
-      if (!touch) return;
-      updatePointer(touch.clientX, touch.clientY);
-    };
+    function tick() {
+      rafRef.current = requestAnimationFrame(tick);
+      frameCount++;
 
-    const handlePointerLeave = () => {
-      pointerRef.current.active = false;
-    };
+      const m = mouseRef.current;
+      const p = propsRef.current;
 
-    const draw = () => {
-      time += 0.018;
-      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      // Decay mouse speed each frame (tuned for ~60fps)
+      m.speed *= 0.92;
+      if (m.speed < 0.001) m.speed = 0;
 
-      const pointer = pointerRef.current;
+      const targetEngagement = Math.min(m.speed / 5, 1);
+      engagement.current += (targetEngagement - engagement.current) * 0.1;
+      if (engagement.current < 0.001) engagement.current = 0;
+      const eng = engagement.current;
 
-      dots.forEach((dot) => {
-        const distanceX = dot.baseX - pointer.x;
-        const distanceY = dot.baseY - pointer.y;
-        const distance = Math.hypot(distanceX, distanceY);
-        const influence =
-          pointer.active && distance < INTERACTION_RADIUS
-            ? 1 - distance / INTERACTION_RADIUS
-            : 0;
+      glowOpacity.current += (eng - glowOpacity.current) * 0.08;
 
-        const angle = Math.atan2(distanceY, distanceX);
-        const ripple = Math.sin(time * 3.2 - distance * 0.045);
-        const displacement = influence * (26 + ripple * 9);
-        const x = dot.baseX + Math.cos(angle) * displacement;
-        const y = dot.baseY + Math.sin(angle) * displacement;
-        const wave = (Math.sin(time + dot.delay + dot.pulse) + 1) / 2;
-        const radius = 1.15 + wave * 0.9 + influence * 2.4;
-        const opacity = 0.18 + wave * 0.12 + influence * 0.42;
+      if (glowEl) {
+        glowEl.setAttribute('cx', String(m.x));
+        glowEl.setAttribute('cy', String(m.y));
+        glowEl.style.opacity = String(glowOpacity.current);
+      }
 
-        if (influence > 0.1) {
-          ctx.beginPath();
-          ctx.arc(x, y, radius * 5.5, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(${PRIMARY_ORANGE}, ${influence * 0.09})`;
-          ctx.fill();
+      // Skip drawing entirely when fully idle
+      const hasWave = (p.waveAmplitude as number) > 0;
+      if (eng < 0.001 && !hasWave) return;
+
+      const { w, h } = sizeRef.current;
+      const dots = dotsRef.current;
+      const len = dots.length;
+      const t = frameCount * 0.02;
+
+      ctx!.clearRect(0, 0, w, h);
+      ctx!.fillStyle = cachedGrad!;
+
+      const cr = p.cursorRadius as number;
+      const crSq = cr * cr;
+      const rad = (p.dotRadius as number) / 2;
+      const isBulge = p.bulgeOnly as boolean;
+
+      ctx!.beginPath();
+
+      for (let i = 0; i < len; i++) {
+        const d = dots[i];
+        const dx = m.x - d.ax;
+        const dy = m.y - d.ay;
+        const distSq = dx * dx + dy * dy;
+
+        if (distSq < crSq && eng > 0.01) {
+          const dist = Math.sqrt(distSq);
+          if (isBulge) {
+            const frac = 1 - dist / cr;
+            const push = frac * frac * (p.bulgeStrength as number) * eng;
+            const angle = Math.atan2(dy, dx);
+            d.sx += (d.ax - Math.cos(angle) * push - d.sx) * 0.22;
+            d.sy += (d.ay - Math.sin(angle) * push - d.sy) * 0.22;
+          } else {
+            const angle = Math.atan2(dy, dx);
+            const move = (500 / dist) * (m.speed * (p.cursorForce as number));
+            d.vx += Math.cos(angle) * -move;
+            d.vy += Math.sin(angle) * -move;
+          }
+        } else if (isBulge) {
+          d.sx += (d.ax - d.sx) * 0.1;
+          d.sy += (d.ay - d.sy) * 0.1;
         }
 
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${PRIMARY_ORANGE}, ${opacity})`;
-        ctx.fill();
-      });
+        if (!isBulge) {
+          d.vx *= 0.9;
+          d.vy *= 0.9;
+          d.x = d.ax + d.vx;
+          d.y = d.ay + d.vy;
+          d.sx += (d.x - d.sx) * 0.1;
+          d.sy += (d.y - d.sy) * 0.1;
+        }
 
-      animationFrameId = requestAnimationFrame(draw);
+        let drawX = d.sx;
+        let drawY = d.sy;
+        if (hasWave) {
+          drawY += Math.sin(d.ax * 0.03 + t) * (p.waveAmplitude as number);
+          drawX += Math.cos(d.ay * 0.03 + t * 0.7) * (p.waveAmplitude as number) * 0.5;
+        }
+
+        if (p.sparkle) {
+          const hash = ((i * 2654435761) ^ (frameCount >> 3)) >>> 0;
+          if ((hash % 100) < 3) {
+            ctx!.moveTo(drawX + rad * 1.8, drawY);
+            ctx!.arc(drawX, drawY, rad * 1.8, 0, TWO_PI);
+          } else {
+            ctx!.moveTo(drawX + rad, drawY);
+            ctx!.arc(drawX, drawY, rad, 0, TWO_PI);
+          }
+        } else {
+          ctx!.moveTo(drawX + rad, drawY);
+          ctx!.arc(drawX, drawY, rad, 0, TWO_PI);
+        }
+      }
+
+      ctx!.fill();
+    }
+
+    doResize();
+    window.addEventListener('resize', resize);
+    window.addEventListener('mousemove', onMouseMove, { passive: true });
+    rafRef.current = requestAnimationFrame(tick);
+
+    rebuildRef.current = () => {
+      const { w, h } = sizeRef.current;
+      if (w > 0 && h > 0) buildDots(w, h);
     };
-
-    buildGrid();
-    draw();
-
-    window.addEventListener("resize", buildGrid);
-    window.addEventListener("pointermove", handlePointerMove);
-    window.addEventListener("pointerleave", handlePointerLeave);
-    window.addEventListener("touchmove", handleTouchMove, { passive: true });
-    window.addEventListener("touchend", handlePointerLeave);
 
     return () => {
-      window.removeEventListener("resize", buildGrid);
-      window.removeEventListener("pointermove", handlePointerMove);
-      window.removeEventListener("pointerleave", handlePointerLeave);
-      window.removeEventListener("touchmove", handleTouchMove);
-      window.removeEventListener("touchend", handlePointerLeave);
-      cancelAnimationFrame(animationFrameId);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      clearTimeout(resizeTimer);
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', onMouseMove);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    rebuildRef.current?.();
+  }, [dotRadius, dotSpacing]);
+
   return (
-    <canvas
-      ref={canvasRef}
-      aria-hidden="true"
-      className="fixed inset-0 z-0 pointer-events-none bg-white"
-    />
+    <div className="w-full h-full relative" {...rest}>
+      <canvas
+        ref={canvasRef}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+        }}
+      />
+      <svg
+        ref={svgRef}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+        }}
+      >
+        <defs>
+          <radialGradient id={glowIdRef.current}>
+            <stop offset="0%" stopColor={glowColor} />
+            <stop offset="100%" stopColor="transparent" />
+          </radialGradient>
+        </defs>
+        <circle
+          ref={glowRef}
+          cx="-9999"
+          cy="-9999"
+          r={glowRadius}
+          fill={`url(#${glowIdRef.current})`}
+          style={{ opacity: 0, willChange: 'opacity' }}
+        />
+      </svg>
+    </div>
+  );
+});
+
+DotField.displayName = 'DotField';
+
+export function DotGrid() {
+  return (
+    <div className="pointer-events-none absolute inset-0" style={{ zIndex: 0 }}>
+      <DotField
+        gradientFrom="rgba(249, 101, 0, 0.55)"
+        gradientTo="rgba(249, 101, 0, 0.18)"
+        glowColor="rgba(0,0,0,0)"
+        glowRadius={0}
+        dotRadius={3.5}
+        dotSpacing={18}
+        bulgeStrength={55}
+        cursorRadius={350}
+      />
+    </div>
   );
 }
+
+export default DotField;

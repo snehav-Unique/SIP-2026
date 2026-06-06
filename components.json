@@ -13,9 +13,12 @@
   "iconLibrary": "lucide",
   "aliases": {
     "components": "@/app/components",
-    "ui": "@/app/components/ui",
     "utils": "@/app/components/ui/utils",
+    "ui": "@/app/components/ui",
     "lib": "@/app/components/ui",
     "hooks": "@/hooks"
+  },
+  "registries": {
+    "@react-bits": "https://reactbits.dev/r/{name}.json"
   }
 }

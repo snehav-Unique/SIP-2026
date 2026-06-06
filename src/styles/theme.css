@@ -2,20 +2,20 @@
 
 :root {
   --font-size: 16px;
-  --background: #FFFFFF;
-  --foreground: #111827;
+  --background: #FAFAF9;
+  --foreground: #0F0D0A;
   --card: #FFFFFF;
-  --card-foreground: #111827;
+  --card-foreground: #0F0D0A;
   --popover: #FFFFFF;
-  --popover-foreground: #111827;
-  --primary: #F97316;
+  --popover-foreground: #0F0D0A;
+  --primary: #F96500;
   --primary-foreground: #FFFFFF;
-  --secondary: #fff5f2;
-  --secondary-foreground: #F97316;
-  --muted: #F9FAFB;
-  --muted-foreground: #6B7280;
-  --accent: #FFEDD5;
-  --accent-foreground: #F97316;
+  --secondary: #FFF4EE;
+  --secondary-foreground: #F96500;
+  --muted: #F5F5F4;
+  --muted-foreground: #78716C;
+  --accent: #FFEDE0;
+  --accent-foreground: #F96500;
   --destructive: #d4183d;
   --destructive-foreground: #ffffff;
   --border: #E5E7EB;
@@ -24,7 +24,7 @@
   --switch-background: #cbced4;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: #F97316;
+  --ring: #F96500;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -126,7 +126,11 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  }
+
+  h1, h2, h3 {
+    font-family: 'Syne', 'Plus Jakarta Sans', system-ui, sans-serif;
   }
 
   /**

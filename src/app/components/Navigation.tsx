@@ -12,7 +12,7 @@ export function Navigation() {
 
   const navItems = [
     { path: "/", label: "Home", icon: Home },
-    { path: "/announcements", label: "Announcements", icon: Bell },
+    { path: "/announcements", label: "Notices", icon: Bell },
     { path: "/map", label: "Map", icon: Map },
   ];
 
@@ -32,49 +32,55 @@ export function Navigation() {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur shadow-sm z-50 border-b border-primary/20">
-      <div className="max-w-7xl mx-auto px-3 py-3 sm:px-5 lg:px-6">
-        <div className="flex items-center justify-between">
+    <nav className="fixed top-3 left-0 right-0 z-50 px-3 sm:top-4 sm:px-5">
+      <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 rounded-2xl border border-stone-200/50 bg-white/50 px-3 py-2 shadow-md shadow-stone-900/5 backdrop-blur-2xl sm:px-4 sm:py-2.5">
 
-          {/* Left: Logo + Title */}
-          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-            <div onClick={handleLogoClick} className="cursor-pointer">
-              <img
-                src={rvceLogo}
-                alt="RVCE Logo"
-                className="h-10 w-10 rounded-full [filter:brightness(0)_contrast(1.2)] sm:h-12 sm:w-12"
-              />
-            </div>
-            <div className="min-w-0">
-              <h1 className="truncate text-sm font-bold text-gray-900 sm:text-lg">RV College of Engineering</h1>
-              <p className="truncate text-[11px] text-gray-600 sm:text-xs">Student Dashboard</p>
-            </div>
+        {/* Logo + wordmark */}
+        <button
+          onClick={handleLogoClick}
+          className="flex min-w-0 cursor-pointer items-center gap-2 sm:gap-2.5"
+        >
+          <div className="shrink-0 rounded-lg overflow-hidden border border-stone-200/70 bg-white/80 p-0.5">
+            <img
+              src={rvceLogo}
+              alt="RVCE"
+              className="h-7 w-7 sm:h-8 sm:w-8 object-contain"
+              style={{ filter: 'brightness(0) contrast(1.1)' }}
+            />
           </div>
-
-          {/* Right: Nav links */}
-          <div className="flex shrink-0 gap-1.5 sm:gap-3">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.path;
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  aria-label={item.label}
-                  className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-all sm:px-4 ${
-                    isActive
-                      ? "bg-primary text-white shadow-md"
-                      : "bg-white text-gray-700 hover:bg-accent border border-border"
-                  }`}
-                >
-                  <Icon size={18} />
-                  <span className="hidden font-medium sm:inline">{item.label}</span>
-                </Link>
-              );
-            })}
+          <div className="min-w-0 text-left">
+            <p className="font-display truncate text-[13px] font-bold leading-tight text-stone-900 sm:text-sm">
+              RV College of Engineering
+            </p>
+            <p className="truncate text-[10px] font-medium text-stone-400 sm:text-[11px]">
+              First Year Portal · 2025
+            </p>
           </div>
+        </button>
 
+        {/* Pill nav group */}
+        <div className="flex items-center gap-0.5 rounded-full border border-stone-200/60 bg-stone-100/50 p-1">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.path;
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                aria-label={item.label}
+                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition-all duration-200 sm:px-4 sm:py-2 ${
+                  isActive
+                    ? "bg-primary text-white shadow-sm"
+                    : "text-stone-500 hover:bg-white/80 hover:text-stone-800"
+                }`}
+              >
+                <Icon size={15} strokeWidth={isActive ? 2.5 : 2} />
+                <span className="hidden sm:inline">{item.label}</span>
+              </Link>
+            );
+          })}
         </div>
+
       </div>
     </nav>
   );
