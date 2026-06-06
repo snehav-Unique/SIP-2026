@@ -6,7 +6,7 @@ export function Navigation() {
   const location = useLocation();
   const navigate = useNavigate();
   const clickCountRef = useRef(0);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isUnlocked, setIsUnlocked] = useState(false);
 
   const navItems = [
@@ -17,16 +17,13 @@ export function Navigation() {
 
   const handleLogoClick = () => {
     clickCountRef.current += 1;
-
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-
     if (clickCountRef.current === 5) {
       setIsUnlocked(true);
       navigate("/sipannouncements/secretlogin");
       clickCountRef.current = 0;
       return;
     }
-
     timeoutRef.current = setTimeout(() => {
       clickCountRef.current = 0;
       setIsUnlocked(false);
@@ -37,15 +34,15 @@ export function Navigation() {
     <nav className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50 border-b border-border">
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
+
+          {/* Left: Logo + Title */}
           <div className="flex items-center gap-3">
-            <div
-              onClick={handleLogoClick}
-              className={`w-12 h-12 bg-primary rounded-full flex items-center justify-center cursor-pointer transition-all ${
-                isUnlocked ? "ring-2 ring-green-500" : "hover:shadow-lg"
-              }`}
-              title="Click 5 times for a secret 😉"
-            >
-              <span className="text-white text-xl font-bold">RV</span>
+            <div onClick={handleLogoClick} className="cursor-pointer">
+              <img
+                src="/RVCE_logo.png"
+                alt="RVCE Logo"
+                className="w-12 h-12 rounded-full"
+              />
             </div>
             <div>
               <h1 className="text-lg font-bold text-gray-900">RV College of Engineering</h1>
@@ -53,6 +50,7 @@ export function Navigation() {
             </div>
           </div>
 
+          {/* Right: Nav links */}
           <div className="flex gap-3">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -73,6 +71,7 @@ export function Navigation() {
               );
             })}
           </div>
+
         </div>
       </div>
     </nav>

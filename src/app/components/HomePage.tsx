@@ -99,13 +99,13 @@ export function HomePage() {
           </h1>
 
           <div className="text-8xl md:text-9xl font-bold text-primary mb-8 relative">
-            2025
+            2026
             <div className="absolute -top-4 -right-4 w-24 h-24 bg-primary/20 rounded-full blur-2xl"></div>
           </div>
 
           <p className="text-xl text-gray-700 max-w-3xl mx-auto mb-12 leading-relaxed">
             Welcome, first-year students and parents. Access the latest circulars, venue details,
-            timetables, and essential information for the 2025 batch.
+            timetables, and essential information for the 2026 batch.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
