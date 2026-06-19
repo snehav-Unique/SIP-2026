@@ -2,9 +2,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, KeyboardEvent } from "react";
 import { CalendarDays, ChevronDown, Clock3, MapPinned, Search, X } from "lucide-react";
 import {
+  Circle,
+  CircleMarker,
   MapContainer,
   Marker,
   Popup,
+  Polyline,
   TileLayer,
   useMap,
 } from "react-leaflet";
@@ -17,6 +20,11 @@ import {
   resolveCampusLocation,
   normalizeLocationName,
 } from "../data/campusLocations";
+import {
+  computeCampusRoute,
+  haversineMeters,
+  loadCampusRouteGraph,
+} from "../data/campusRoutes";
 import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
 import "leaflet/dist/leaflet.css";
@@ -64,6 +72,40 @@ function MapController({
   return null;
 }
 
+function RouteController({
+  selectedLocation,
+  userPosition,
+  routePath,
+}: {
+  selectedLocation: CampusLocation | null;
+  userPosition: { lat: number; lng: number } | null;
+  routePath: [number, number][] | null;
+}) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!selectedLocation || !userPosition) return;
+
+    const points: [number, number][] = routePath?.length
+      ? [
+          [userPosition.lat, userPosition.lng],
+          ...routePath,
+          [selectedLocation.lat, selectedLocation.lng],
+        ]
+      : [
+          [userPosition.lat, userPosition.lng],
+          [selectedLocation.lat, selectedLocation.lng],
+        ];
+    const bounds = L.latLngBounds(points);
+    map.fitBounds(bounds.pad(0.3), {
+      animate: true,
+      duration: 0.9,
+    });
+  }, [map, routePath, selectedLocation, userPosition]);
+
+  return null;
+}
+
 type CampusMapProps = {
   initialSearch?: string;
   focusAnnouncementId?: string | null;
@@ -74,6 +116,64 @@ type VenueAnnouncementGroup = {
   location: CampusLocation;
   announcements: Announcement[];
 };
+
+type GeoState =
+  | { status: "idle" | "requesting" | "active"; position: null }
+  | {
+      status: "active";
+      position: {
+        lat: number;
+        lng: number;
+        accuracy: number;
+      };
+    }
+  | {
+      status: "denied" | "unavailable" | "error";
+      position: null;
+    message: string;
+  };
+
+type RouteState =
+  | {
+      status: "idle" | "loading";
+      path: null;
+      distanceMeters: null;
+      durationSeconds: null;
+      message: null;
+    }
+  | {
+      status: "ready";
+      path: [number, number][];
+      distanceMeters: number;
+      durationSeconds: number;
+      message: null;
+    }
+  | {
+      status: "error";
+      path: null;
+      distanceMeters: null;
+      durationSeconds: null;
+      message: string;
+    };
+
+function getGeoErrorMessage(code?: number) {
+  if (code === 1) {
+    return "Location access was denied. Turn it on in your browser settings to show your blue dot.";
+  }
+  if (code === 2) {
+    return "Your location could not be found right now. Try moving to a clearer signal area.";
+  }
+  if (code === 3) {
+    return "Location request timed out. Try again in a moment.";
+  }
+  return "Location access is not available in this browser.";
+}
+
+function getGeoStatusFromError(code: number): Exclude<GeoState["status"], "idle" | "requesting" | "active"> {
+  if (code === 1) return "denied";
+  if (code === 2) return "unavailable";
+  return "error";
+}
 
 function formatEventLabel(announcement: Announcement) {
   const range = getAnnouncementTimeRange(announcement);
@@ -102,6 +202,15 @@ function getDropdownMatches(query: string): CampusLocation[] {
     .slice(0, 8);
 }
 
+function isValidLatLng(point: [number, number] | null | undefined): point is [number, number] {
+  return (
+    Array.isArray(point) &&
+    point.length === 2 &&
+    Number.isFinite(point[0]) &&
+    Number.isFinite(point[1])
+  );
+}
+
 export default function CampusMap({
   initialSearch = "",
   focusAnnouncementId = null,
@@ -118,6 +227,70 @@ export default function CampusMap({
   const markerRefs = useRef<Record<string, LeafletMarker | null>>({});
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const watchIdRef = useRef<number | null>(null);
+  const routeGraphRef = useRef(loadCampusRouteGraph());
+  const [geoState, setGeoState] = useState<GeoState>({
+    status: "requesting",
+    position: null,
+  });
+  const [routeState, setRouteState] = useState<RouteState>({
+    status: "idle",
+    path: null,
+    distanceMeters: null,
+    durationSeconds: null,
+    message: null,
+  });
+
+  const beginGeoWatch = () => {
+    if (!("geolocation" in navigator)) {
+      setGeoState({
+        status: "unavailable",
+        position: null,
+        message: "This browser does not support location tracking.",
+      });
+      return;
+    }
+
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
+
+    setGeoState((current) =>
+      current.status === "active"
+        ? current
+        : { status: "requesting", position: null },
+    );
+
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      (position) => {
+        setGeoState({
+          status: "active",
+          position: {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+          },
+        });
+      },
+      (error) => {
+        if (watchIdRef.current !== null) {
+          navigator.geolocation.clearWatch(watchIdRef.current);
+          watchIdRef.current = null;
+        }
+        setGeoState({
+          status: getGeoStatusFromError(error.code),
+          position: null,
+          message: getGeoErrorMessage(error.code),
+        });
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 5000,
+        timeout: 10000,
+      },
+    );
+  };
 
   const setMarkerRef = (name: string) => (marker: LeafletMarker | null) => {
     markerRefs.current[name] = marker;
@@ -127,6 +300,27 @@ export default function CampusMap({
     setSearch(initialSearch);
   }, [initialSearch]);
 
+  useEffect(() => {
+    const syncGraph = () => {
+      routeGraphRef.current = loadCampusRouteGraph();
+    };
+
+    syncGraph();
+    window.addEventListener("storage", syncGraph);
+    return () => window.removeEventListener("storage", syncGraph);
+  }, []);
+
+  useEffect(() => {
+    beginGeoWatch();
+
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+    };
+  }, []);
+
   // Dropdown suggestions based on current search text
   // Dropdown suggestions: all locations when browsing, filtered matches when typing
   const suggestions = useMemo(() => {
@@ -134,12 +328,23 @@ export default function CampusMap({
     return getDropdownMatches(search);
   }, [search, browseAll]);
 
+  const resetRouteState = () => {
+    setRouteState({
+      status: "idle",
+      path: null,
+      distanceMeters: null,
+      durationSeconds: null,
+      message: null,
+    });
+  };
+
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
     setBrowseAll(false);
     setDropdownOpen(true);
     setHighlightedIndex(-1);
     setPinnedLocation(null);
+    resetRouteState();
   };
 
   const handleSelectSuggestion = (location: CampusLocation) => {
@@ -149,6 +354,7 @@ export default function CampusMap({
     setDropdownOpen(false);
     setBrowseAll(false);
     setHighlightedIndex(-1);
+    resetRouteState();
     setTimeout(() => {
       markerRefs.current[location.name]?.openPopup();
     }, 1900);
@@ -160,6 +366,7 @@ export default function CampusMap({
     setActiveLocationName(null);
     setDropdownOpen(false);
     setBrowseAll(false);
+    resetRouteState();
     inputRef.current?.focus();
   };
 
@@ -220,6 +427,57 @@ export default function CampusMap({
   // Selected location: pinned (from dropdown) > focusAnnouncement location
   const selectedLocation =
     pinnedLocation ?? resolveCampusLocation(focusAnnouncement?.location);
+  const geoPosition = geoState.status === "active" ? geoState.position : null;
+
+  useEffect(() => {
+    if (!geoPosition || !selectedLocation) {
+      setRouteState({
+        status: "idle",
+        path: null,
+        distanceMeters: null,
+        durationSeconds: null,
+        message: null,
+      });
+      return;
+    }
+
+    try {
+      const route = computeCampusRoute(
+        routeGraphRef.current,
+        geoPosition,
+        selectedLocation,
+      );
+
+      if (!route) {
+        setRouteState({
+          status: "error",
+          path: null,
+          distanceMeters: null,
+          durationSeconds: null,
+          message:
+            "No campus road graph is available yet. Open the route editor to plot internal roads first.",
+        });
+        return;
+      }
+
+      setRouteState({
+        status: "ready",
+        path: route.path.filter(isValidLatLng),
+        distanceMeters: route.distanceMeters,
+        durationSeconds: route.durationSeconds,
+        message: null,
+      });
+    } catch {
+      setRouteState({
+        status: "error",
+        path: null,
+        distanceMeters: null,
+        durationSeconds: null,
+        message:
+          "Route calculation failed. Please check the plotted route graph for invalid points.",
+      });
+    }
+  }, [geoPosition, selectedLocation]);
 
   useEffect(() => {
     setActiveLocationName(selectedLocation?.name ?? null);
@@ -241,6 +499,66 @@ export default function CampusMap({
 
   return (
     <div className="space-y-4">
+      {geoState.status !== "active" ? (
+        <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-stone-900">
+                Live location
+              </p>
+              <p className="mt-1 text-xs text-stone-500">
+                {geoState.status === "requesting"
+                  ? "Requesting your location so the blue dot can appear on the map."
+                  : "Your blue dot is hidden until location access is allowed."}
+              </p>
+              {"message" in geoState && (
+                <p className="mt-2 text-xs text-amber-700">{geoState.message}</p>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={beginGeoWatch}
+              className="shrink-0 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-xs font-semibold text-primary transition hover:bg-primary hover:text-white"
+            >
+              Enable location
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {geoPosition && selectedLocation ? (
+        <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4 shadow-sm">
+          <p className="text-sm font-semibold text-stone-900">
+            Route preview active
+          </p>
+          {routeState.status === "ready" ? (
+            <p className="mt-1 text-xs text-stone-600">
+              Showing the shortest road route snapped to the nearest road points for{" "}
+              <span className="font-semibold text-stone-900">
+                {selectedLocation.name}
+              </span>
+              {routeState.distanceMeters != null && routeState.durationSeconds != null
+                ? ` · ${Math.round(routeState.distanceMeters)} m · ${Math.ceil(
+                    routeState.durationSeconds / 60,
+                  )} min`
+                : ""}
+            </p>
+          ) : routeState.status === "error" ? (
+            <p className="mt-1 text-xs text-amber-700">{routeState.message}</p>
+          ) : null}
+        </div>
+      ) : selectedLocation ? (
+        <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+          <p className="text-sm font-semibold text-stone-900">
+            Destination selected
+          </p>
+          <p className="mt-1 text-xs text-stone-500">
+            Turn on location access to see the route from your current position to{" "}
+            <span className="font-semibold text-stone-800">{selectedLocation.name}</span>.
+          </p>
+        </div>
+      ) : null}
+
       {/* Search box with dropdown */}
       <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
         <label
@@ -393,6 +711,96 @@ export default function CampusMap({
               maxZoom={19}
             />
             <MapController selectedLocation={selectedLocation} />
+            <RouteController
+              selectedLocation={selectedLocation}
+              userPosition={geoPosition ? { lat: geoPosition.lat, lng: geoPosition.lng } : null}
+              routePath={routeState.status === "ready" ? routeState.path : null}
+            />
+            {geoState.status === "active" && geoState.position && (
+              <>
+                <Circle
+                  center={[geoState.position.lat, geoState.position.lng]}
+                  radius={Math.max(geoState.position.accuracy / 2, 6)}
+                  pathOptions={{
+                    color: "#2563eb",
+                    fillColor: "#2563eb",
+                    fillOpacity: 0.08,
+                    weight: 1,
+                  }}
+                />
+                <CircleMarker
+                  center={[geoState.position.lat, geoState.position.lng]}
+                  radius={7}
+                  pathOptions={{
+                    color: "#ffffff",
+                    weight: 2,
+                    fillColor: "#3b82f6",
+                    fillOpacity: 1,
+                  }}
+                />
+              </>
+            )}
+            {routeState.status === "ready" && selectedLocation && (
+              <>
+                {geoPosition &&
+                  routeState.path.length > 0 &&
+                  haversineMeters(
+                    geoPosition,
+                    {
+                      lat: routeState.path[0][0],
+                      lng: routeState.path[0][1],
+                    },
+                  ) > 0.5 && (
+                    <Polyline
+                      positions={[
+                        [geoPosition.lat, geoPosition.lng],
+                        routeState.path[0],
+                      ]}
+                      pathOptions={{
+                        color: "#94a3b8",
+                        weight: 3,
+                        opacity: 0.7,
+                        lineCap: "round",
+                        lineJoin: "round",
+                        dashArray: "6 8",
+                      }}
+                    />
+                  )}
+                <Polyline
+                  positions={routeState.path}
+                  pathOptions={{
+                    color: "#2563eb",
+                    weight: 5,
+                    opacity: 0.85,
+                    lineCap: "round",
+                    lineJoin: "round",
+                  }}
+                />
+                {routeState.path.length > 0 &&
+                  haversineMeters(
+                    {
+                      lat: routeState.path[routeState.path.length - 1][0],
+                      lng: routeState.path[routeState.path.length - 1][1],
+                    },
+                    selectedLocation,
+                  ) > 0.5 && (
+                    <Polyline
+                      positions={[
+                        routeState.path[routeState.path.length - 1],
+                        [selectedLocation.lat, selectedLocation.lng],
+                      ]}
+                      pathOptions={{
+                        color: "#94a3b8",
+                        weight: 3,
+                        opacity: 0.7,
+                        lineCap: "round",
+                        lineJoin: "round",
+                        dashArray: "6 8",
+                      }}
+                    />
+                  )}
+              </>
+            )}
             {visibleGroups.map((group) => {
               const isActive = activeLocationName === group.location.name;
               const isFocusedVenue =

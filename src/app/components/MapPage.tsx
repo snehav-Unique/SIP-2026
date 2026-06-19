@@ -2,6 +2,32 @@ import { useSearchParams } from "react-router";
 import CampusMap from "../../components/CampusMap";
 import { useAnnouncements } from "../../hooks/useAnnouncements";
 import { isAnnouncementCurrentOrUpcoming } from "../../utils/announcementTiming";
+import { Component } from "react";
+import type { ReactNode } from "react";
+
+class MapErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  override render() {
+    if (this.state.hasError) {
+      return (
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
+          The campus map hit an unexpected error. Please refresh the page. If it
+          keeps happening, the route graph may contain an invalid point.
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 export function MapPage() {
   const [searchParams] = useSearchParams();
@@ -25,11 +51,13 @@ export function MapPage() {
             RV College of Engineering, Mysore Road, Bengaluru 560059
           </p>
         </div>
-        <CampusMap
-          initialSearch={destination ?? ""}
-          focusAnnouncementId={focusAnnouncementId}
-          announcements={activeVenueAnnouncements}
-        />
+        <MapErrorBoundary>
+          <CampusMap
+            initialSearch={destination ?? ""}
+            focusAnnouncementId={focusAnnouncementId}
+            announcements={activeVenueAnnouncements}
+          />
+        </MapErrorBoundary>
       </div>
     </div>
   );
