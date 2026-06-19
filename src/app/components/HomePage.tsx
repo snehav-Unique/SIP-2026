@@ -56,8 +56,29 @@ const resourceCards = [
 export function HomePage() {
   const navigate = useNavigate();
   const { announcements } = useAnnouncements();
-  const recent = announcements.slice(0, 3);
-
+// Updated - filters by exact datetime
+const now = new Date();
+const recentAnnouncements = announcements
+  .filter((a) => {
+    const eventDate = new Date(a.date);
+    // If time exists (e.g. "10:30 AM"), parse and combine with date
+    if (a.time) {
+      const timeMatch = a.time.match(/(\d+):(\d+)\s*(AM|PM)/i);
+      if (timeMatch) {
+        let hours = parseInt(timeMatch[1]);
+        const mins = parseInt(timeMatch[2]);
+        const period = timeMatch[3].toUpperCase();
+        if (period === "PM" && hours !== 12) hours += 12;
+        if (period === "AM" && hours === 12) hours = 0;
+        eventDate.setHours(hours, mins, 0, 0);
+      }
+    } else {
+      // No time — keep it visible all day
+      eventDate.setHours(23, 59, 59, 999);
+    }
+    return eventDate >= now;
+  })
+  .slice(0, 3);
   return (
     <div className="min-h-screen px-3 py-4 sm:px-5 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-4">
@@ -151,24 +172,24 @@ export function HomePage() {
                 </button>
               </div>
               <div className="divide-y divide-stone-100">
-                {recent.map((a) => (
+                {recentAnnouncements.map((announcement) => (
                   <button
-                    key={a.id}
+                    key={announcement.id}
                     onClick={() => navigate("/announcements")}
                     className="grid w-full gap-1 py-3 text-left hover:opacity-70 sm:grid-cols-[1fr_auto] sm:items-center"
                   >
                     <div>
                       <div className="mb-1 flex flex-wrap items-center gap-1.5">
-                        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">{a.category}</span>
-                        <span className="text-[10px] text-stone-400">{new Date(a.date).toLocaleDateString()}</span>
+                        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">{announcement.category}</span>
+                        <span className="text-[10px] text-stone-400">{new Date(announcement.date).toLocaleDateString()}</span>
                       </div>
-                      <h3 className="text-sm font-bold text-stone-900">{a.title}</h3>
-                      <p className="mt-0.5 line-clamp-1 text-xs text-stone-400">{a.description}</p>
+                      <h3 className="text-sm font-bold text-stone-900">{announcement.title}</h3>
+                      <p className="mt-0.5 line-clamp-1 text-xs text-stone-400">{announcement.description}</p>
                     </div>
-                    {a.location && (
+                    {announcement.location && (
                       <span className="flex items-center gap-1 text-[10px] font-semibold text-stone-400">
                         <MapPin size={11} className="text-primary" />
-                        {a.location}
+                        {announcement.location}
                       </span>
                     )}
                   </button>

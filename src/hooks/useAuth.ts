@@ -7,8 +7,9 @@ import {
 } from "firebase/auth";
 import { auth, googleProvider } from "../config/firebase";
 import { ALLOWED_EMAILS } from "../config/allowedDeans";
-import { EMERGENCY_PASSWORD } from "../config/emergencyAccess";
 
+const EMERGENCY_PASSWORD =
+  import.meta.env.VITE_EMERGENCY_PASSWORD || "rvce-sip-2026";
 
 type Status = "idle" | "checking" | "loading" | "authorized" | "unauthorized";
 
@@ -58,27 +59,43 @@ export function useAuth() {
       } else {
         await signOut(auth);
         setStatus("unauthorized");
-        return { ok: false, message: "Email not authorized" };
+        return {
+          ok: false,
+          message:
+            ALLOWED_EMAILS.length === 0
+              ? "No allowed dean emails are configured in VITE_ALLOWED_DEANS."
+              : "Email not authorized for dean access.",
+        };
       }
     } catch (err: any) {
       setStatus("idle");
-      return { ok: false, message: err?.message || String(err) };
+      return {
+        ok: false,
+        message:
+          err?.code === "auth/popup-blocked"
+            ? "Google sign-in popup was blocked by the browser."
+            : err?.code === "auth/unauthorized-domain"
+              ? "This host is not authorized in Firebase Authentication. Add your dev URL to Firebase authorized domains."
+              : err?.message || String(err),
+      };
     }
   };
 
-  const loginWithPassword = async (pwd: string) => {
+  const loginWithEmergencyPassword = async (password: string) => {
     setStatus("loading");
-    if (pwd === EMERGENCY_PASSWORD) {
+    if (password === EMERGENCY_PASSWORD) {
       localStorage.setItem("isAdmin", "true");
       setStatus("authorized");
       setMethod("emergency");
       return { ok: true };
     }
+
     setStatus("unauthorized");
-    return { ok: false, message: "Invalid password" };
+    return { ok: false, message: "Emergency password is incorrect." };
   };
+
 const logout = async () => {
-  setStatus("checking"); // prevent flicker while signing out
+  setStatus("checking");
   try {
     await signOut(auth);
   } catch {
@@ -91,6 +108,14 @@ const logout = async () => {
 };
 
   const isAdmin = status === "authorized";
-
-  return { status, user, loginWithGoogle, loginWithPassword, logout, isAdmin, method };
+return {
+  status,
+  user,
+  loginWithGoogle,
+  loginWithEmergencyPassword,
+  logout,
+  isAdmin,
+  method,
+  allowedEmailsConfigured: ALLOWED_EMAILS.length > 0,
+};
 }

@@ -26,7 +26,7 @@
 
   4. Emergency password
 
-  - Set the emergency password in `VITE_EMERGENCY_PASSWORD` in your `.env` (defaults to `rvce-sip-2025` if empty).
+  - Set the emergency password in `VITE_EMERGENCY_PASSWORD` in your `.env` (defaults to `rvce-sip-2026` if empty).
 
   5. Run dev server
 

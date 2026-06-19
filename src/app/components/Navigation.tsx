@@ -53,7 +53,7 @@ export function Navigation() {
               RV College of Engineering
             </p>
             <p className="truncate text-[10px] font-medium text-stone-400 sm:text-[11px]">
-              First Year Portal · 2025
+              First Year Portal · 2026
             </p>
           </div>
         </button>

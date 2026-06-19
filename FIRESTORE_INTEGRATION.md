@@ -42,15 +42,15 @@ Dean Deletes → Firestore → onSnapshot fires → announcement disappears inst
   "id": "auto-generated",
   "title": "First Year Orientation Program",
   "description": "Welcome session for all first-year students",
-  "date": "2025-05-28",
+  "date": "2026-05-28",
   "time": "10:00 AM - 12:00 PM",
   "location": "Main Auditorium",
   "category": "Dean",
   "author": "Dean",
   "hasDocument": true,
   "documentUrl": null,
-  "createdAt": "2025-05-20T10:30:00Z",
-  "updatedAt": "2025-05-20T11:00:00Z"
+  "createdAt": "2026-05-20T10:30:00Z",
+  "updatedAt": "2026-05-20T11:00:00Z"
 }
 ```
 

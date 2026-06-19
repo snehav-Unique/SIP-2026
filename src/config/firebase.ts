@@ -31,4 +31,7 @@ if (!getApps().length) {
 
 export const auth = getAuth();
 export const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({
+  prompt: "select_account",
+});
 export const db = getFirestore();
