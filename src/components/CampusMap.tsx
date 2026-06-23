@@ -127,12 +127,32 @@ export default function CampusMap({
     setSearch(initialSearch);
   }, [initialSearch]);
 
-  // Dropdown suggestions based on current search text
-  // Dropdown suggestions: all locations when browsing, filtered matches when typing
+  const venueGroups = useMemo(() => {
+    const byLocation = new Map<string, VenueAnnouncementGroup>();
+    announcements.forEach((announcement) => {
+      const location = resolveCampusLocation(announcement.location);
+      if (!location) return;
+      const existing = byLocation.get(location.name);
+      if (existing) {
+        existing.announcements.push(announcement);
+        return;
+      }
+      byLocation.set(location.name, { location, announcements: [announcement] });
+    });
+    return Array.from(byLocation.values());
+  }, [announcements]);
+
+  const activeLocations = venueGroups.length > 0
+    ? venueGroups.map((group) => group.location)
+    : campusLocations;
+
+  // Dropdown suggestions: active notice locations when available, otherwise all locations.
   const suggestions = useMemo(() => {
-    if (browseAll) return campusLocations;
-    return getDropdownMatches(search);
-  }, [search, browseAll]);
+    if (browseAll) return activeLocations;
+    return getDropdownMatches(search).filter((location) =>
+      activeLocations.some((activeLocation) => activeLocation.name === location.name),
+    );
+  }, [activeLocations, search, browseAll]);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
@@ -194,21 +214,6 @@ export default function CampusMap({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const venueGroups = useMemo(() => {
-    const byLocation = new Map<string, VenueAnnouncementGroup>();
-    announcements.forEach((announcement) => {
-      const location = resolveCampusLocation(announcement.location);
-      if (!location) return;
-      const existing = byLocation.get(location.name);
-      if (existing) {
-        existing.announcements.push(announcement);
-        return;
-      }
-      byLocation.set(location.name, { location, announcements: [announcement] });
-    });
-    return Array.from(byLocation.values());
-  }, [announcements]);
-
   const focusAnnouncement = useMemo(
     () =>
       announcements.find(
@@ -226,18 +231,12 @@ export default function CampusMap({
   }, [selectedLocation]);
 
   const visibleGroups = useMemo(() => {
-    if (venueGroups.length === 0) {
-      return campusLocations.map((location) => ({ location, announcements: [] }));
+    if (venueGroups.length > 0) {
+      return [...venueGroups];
     }
-    const groups = [...venueGroups];
-    if (
-      pinnedLocation &&
-      !groups.some((g) => g.location.name === pinnedLocation.name)
-    ) {
-      groups.push({ location: pinnedLocation, announcements: [] });
-    }
-    return groups;
-  }, [pinnedLocation, venueGroups]);
+
+    return campusLocations.map((location) => ({ location, announcements: [] }));
+  }, [venueGroups]);
 
   return (
     <div className="space-y-4">
@@ -379,7 +378,7 @@ export default function CampusMap({
 
       {/* Map */}
       <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
-        <div style={{ height: "500px", width: "100%" }}>
+        <div className="h-[60vh] min-h-[420px] w-full sm:h-[65vh]">
           <MapContainer
             center={MAP_CENTER}
             zoom={MAP_ZOOM}
@@ -412,6 +411,9 @@ export default function CampusMap({
                       setSearch(loc.name);
                       setPinnedLocation(loc);
                       setDropdownOpen(false);
+                      setTimeout(() => {
+                        markerRefs.current[loc.name]?.openPopup();
+                      }, 0);
                     },
                   }}
                 >
@@ -420,6 +422,9 @@ export default function CampusMap({
                       <div>
                         <p className="font-semibold text-stone-900">
                           {group.location.name}
+                        </p>
+                        <p className="text-xs font-medium text-primary">
+                          Spot demarcated
                         </p>
                         <p className="text-xs text-stone-500">
                           {group.announcements.length > 0

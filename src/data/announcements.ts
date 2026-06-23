@@ -8,6 +8,10 @@ export interface Announcement {
   author: string;
   category: "Dean" | "Department" | "Timetable" | "Venue";
   hasDocument?: boolean;
+  documentUrl?: string;
+  fileUrl?: string;
+  documentName?: string;
+  documentType?: string;
 }
 
 export const defaultAnnouncements: Announcement[] = [

@@ -35,6 +35,10 @@ const unsubscribe = onSnapshot(
           author: d.author || "",
           category: d.category || "Dean",
           hasDocument: d.hasDocument || false,
+          documentUrl: d.documentUrl || d.fileUrl || "",
+          fileUrl: d.fileUrl || d.documentUrl || "",
+          documentName: d.documentName || "",
+          documentType: d.documentType || "",
         };
       });
       setAnnouncements(firestoreData);

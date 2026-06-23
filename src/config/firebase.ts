@@ -2,6 +2,8 @@ import { initializeApp, getApps } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getAnalytics, isSupported } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
+
 
 // Read Firebase config from Vite environment variables (VITE_ prefix)
 const firebaseConfig = {
@@ -35,3 +37,4 @@ googleProvider.setCustomParameters({
   prompt: "select_account",
 });
 export const db = getFirestore();
+export const storage = getStorage();

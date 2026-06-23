@@ -1,32 +1,37 @@
-import { useState } from "react";
 import { useNavigate } from "react-router";
-import { Calendar, MapPin, Download, Clock, User } from "lucide-react";
+import { Calendar, MapPin, Download, Clock, User, FileDown } from "lucide-react";
 import { useAnnouncements } from "../../hooks/useAnnouncements";
 import { Announcement } from "../../data/announcements";
 import { getAnnouncementTimeRange } from "../../utils/announcementTiming";
 
 export function AnnouncementsPage() {
   const navigate = useNavigate();
-  const [selectedCategory, setSelectedCategory] = useState<string>("All");
-  const { announcements, getLastUpdated } = useAnnouncements();
-
-  const categories = ["All", "Dean", "Department", "Timetable", "Venue"];
+  const { announcements } = useAnnouncements();
 
   const now = new Date();
 
-const filtered =
-  selectedCategory === "All"
-    ? announcements
-    : announcements.filter((a) => a.category === selectedCategory);
+  const upcoming = announcements
+    .filter((a) => {
+      const range = getAnnouncementTimeRange(a);
+      return range ? range.end >= now : false;
+    })
+    .sort((a, b) => {
+      const aStart = getAnnouncementTimeRange(a)?.start?.getTime() ?? 0;
+      const bStart = getAnnouncementTimeRange(b)?.start?.getTime() ?? 0;
+      return aStart - bStart;
+    });
 
-const upcoming = filtered.filter((a) => {
-  const range = getAnnouncementTimeRange(a);
-  return range ? range.end >= now : false;
-});
-const past = filtered.filter((a) => {
-  const range = getAnnouncementTimeRange(a);
-  return range ? range.end < now : false;
-});
+  const past = announcements
+    .filter((a) => {
+      const range = getAnnouncementTimeRange(a);
+      return range ? range.end < now : false;
+    })
+    .sort((a, b) => {
+      const aStart = getAnnouncementTimeRange(a)?.start?.getTime() ?? 0;
+      const bStart = getAnnouncementTimeRange(b)?.start?.getTime() ?? 0;
+      return bStart - aStart;
+    });
+
   const handleMapNavigation = (announcement: Announcement) => {
     const params = new URLSearchParams();
     if (announcement.location) {
@@ -36,40 +41,24 @@ const past = filtered.filter((a) => {
     navigate(`/map?${params.toString()}`);
   };
 
-  const lastUpdatedTime = getLastUpdated();
-  const getRelativeTime = (isoString: string | null) => {
-    if (!isoString) return null;
-    const date = new Date(isoString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-    if (diffMins < 1) return "just now";
-    if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? "s" : ""} ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
-    if (diffDays < 30) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
-    return date.toLocaleDateString();
-  };
-
   const AnnouncementCard = ({ announcement }: { announcement: Announcement }) => (
-    <div className="bg-white rounded-xl p-6 border-2 border-gray-200 hover:border-primary hover:shadow-xl transition-all">
-      <div className="flex items-start justify-between mb-4">
+    <div className="rounded-2xl border border-stone-100 bg-white p-5 shadow-sm transition-shadow hover:shadow-md sm:p-6">
+      <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
-            <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
               {announcement.category}
             </span>
             {announcement.hasDocument && (
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium flex items-center gap-1">
-                <Download size={14} />
-                PDF Available
+              <span className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-500">
+                <FileDown size={13} />
+                {announcement.documentType?.includes("image") ? "Image attachment" : "PDF available"}
               </span>
             )}
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">{announcement.title}</h2>
-          <p className="text-gray-700 mb-4">{announcement.description}</p>
-          <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+          <h2 className="text-xl font-bold text-stone-950 sm:text-2xl">{announcement.title}</h2>
+          <p className="mt-2 text-sm leading-7 text-stone-500">{announcement.description}</p>
+          <div className="mt-4 flex flex-wrap gap-4 text-sm text-stone-500">
             <div className="flex items-center gap-2">
               <User size={16} className="text-primary" />
               <span>{announcement.author}</span>
@@ -87,16 +76,17 @@ const past = filtered.filter((a) => {
           </div>
         </div>
       </div>
+
       {announcement.location && (
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-gray-700">
+        <div className="mt-5 rounded-2xl bg-stone-50 p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2 text-stone-600">
               <MapPin size={18} className="text-primary" />
               <span className="font-medium">{announcement.location}</span>
             </div>
             <button
               onClick={() => handleMapNavigation(announcement)}
-              className="px-4 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-[#fb923c] transition-colors flex items-center gap-2"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
             >
               <MapPin size={16} />
               View on Map
@@ -104,69 +94,52 @@ const past = filtered.filter((a) => {
           </div>
         </div>
       )}
-      {announcement.hasDocument && (
+
+      {announcement.hasDocument && announcement.fileUrl && (
         <div className="mt-4">
-          <button className="w-full px-4 py-3 bg-white text-primary rounded-lg font-semibold hover:bg-primary hover:text-white transition-colors flex items-center justify-center gap-2 border-2 border-primary">
+          <a
+            href={announcement.fileUrl}
+            target="_blank"
+            rel="noreferrer"
+            download={announcement.documentName || "announcement-attachment"}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-primary bg-white px-4 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-white"
+          >
             <Download size={18} />
-            Download Document (PDF)
-          </button>
+            Download {announcement.documentType?.includes("image") ? "Image" : "PDF"}
+          </a>
         </div>
       )}
     </div>
   );
 
   return (
-    <div className="min-h-screen">
-      <div className="relative z-10 max-w-7xl mx-auto px-6 py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Announcements</h1>
-          <div className="w-20 h-1 bg-primary mb-4"></div>
-          <p className="text-gray-600">Stay updated with the latest circulars and notices</p>
-          {lastUpdatedTime && (
-            <p className="text-sm text-gray-500 mt-2">
-              Last updated by Dean:{" "}
-              <span className="font-semibold">{getRelativeTime(lastUpdatedTime)}</span>
-            </p>
-          )}
+    <div className="min-h-screen px-3 py-4 sm:px-5 lg:px-8">
+      <div className="mx-auto max-w-7xl space-y-4">
+        <div>
+          <h1 className="font-display text-2xl font-bold text-stone-950 sm:text-3xl">Announcements</h1>
+          <p className="mt-1 text-sm text-stone-500">Stay updated with the latest circulars, notices and downloadable files.</p>
         </div>
 
-        {/* Category Filter */}
-        <div className="flex gap-3 mb-8 overflow-x-auto pb-2">
-          {categories.map((category) => (
-            <button
-              key={category}
-              onClick={() => setSelectedCategory(category)}
-              className={`px-6 py-3 rounded-lg font-semibold whitespace-nowrap transition-all ${
-                selectedCategory === category
-                  ? "bg-primary text-white"
-                  : "bg-white text-gray-700 border-2 border-gray-200 hover:border-primary"
-              }`}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
-
-        {/* Upcoming */}
-        <div className="grid gap-6">
+        <div className="grid gap-4">
           {upcoming.length === 0 ? (
-            <p className="text-gray-500 text-center py-6">No upcoming announcements.</p>
+            <div className="rounded-2xl border border-stone-100 bg-white p-6 text-center text-stone-500">
+              No upcoming announcements.
+            </div>
           ) : (
             upcoming.map((a) => <AnnouncementCard key={a.id} announcement={a} />)
           )}
         </div>
 
-        {/* Past Announcements Divider */}
         {past.length > 0 && (
-          <div className="mt-12">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="flex-1 h-px bg-gray-300"></div>
-              <span className="text-sm font-semibold text-gray-400 uppercase tracking-wide">
+          <div className="pt-4">
+            <div className="mb-5 flex items-center gap-4">
+              <div className="h-px flex-1 bg-stone-200" />
+              <span className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-400">
                 Past Announcements
               </span>
-              <div className="flex-1 h-px bg-gray-300"></div>
+              <div className="h-px flex-1 bg-stone-200" />
             </div>
-            <div className="grid gap-6 opacity-60">
+            <div className="grid gap-4 opacity-80">
               {past.map((a) => <AnnouncementCard key={a.id} announcement={a} />)}
             </div>
           </div>

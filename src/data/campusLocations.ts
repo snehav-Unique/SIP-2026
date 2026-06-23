@@ -54,6 +54,40 @@ export function resolveCampusLocation(locationText?: string | null) {
   const normalizedSearch = normalizeLocationName(locationText);
   if (!normalizedSearch) return null;
 
+  const aliasMatches: Record<string, string[]> = {
+    "Civil Dept": [
+      "civil terrace",
+      "civil seminar",
+      "civil seminar hall",
+      "civil terrace hall",
+      "civil block",
+      "civil department",
+      "civil dept",
+    ],
+    "Chem/Phy Dept": [
+      "chemistry seminar",
+      "physics seminar",
+      "chem seminar",
+      "phy seminar",
+      "chem phy",
+      "chem physics",
+    ],
+    "CS Dept": [
+      "cs block",
+      "cs seminar",
+      "computer science",
+      "cse dept",
+    ],
+  };
+
+  const aliasedLocation = campusLocations.find((location) => {
+    const aliases = aliasMatches[location.name];
+    if (!aliases) return false;
+    return aliases.some((alias) => normalizedSearch.includes(normalizeLocationName(alias)));
+  });
+
+  if (aliasedLocation) return aliasedLocation;
+
   return (
     campusLocations.find(
       (location) => normalizeLocationName(location.name) === normalizedSearch,

@@ -1,4 +1,4 @@
-import { Home, Bell, Map } from "lucide-react";
+import { Home, Bell, Map, CalendarDays } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { useRef, useState } from "react";
 import rvceLogo from "../../../RVCE_Logo.png";
@@ -12,6 +12,7 @@ export function Navigation() {
 
   const navItems = [
     { path: "/", label: "Home", icon: Home },
+    { path: "/schedule", label: "Schedule", icon: CalendarDays },
     { path: "/announcements", label: "Notices", icon: Bell },
     { path: "/map", label: "Map", icon: Map },
   ];

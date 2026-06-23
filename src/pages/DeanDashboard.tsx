@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useAnnouncements } from "../hooks/useAnnouncements";
-import { Check, Edit2, Trash2, Plus, X } from "lucide-react";
+import { Check, Edit2, Trash2, Plus, Upload, FileDown, X } from "lucide-react";
 import { useNavigate } from "react-router";
 import {
   addDoc,
@@ -14,8 +14,90 @@ import {
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { Announcement } from "../data/announcements";
+import { uploadAnnouncementFile } from "../utils/uploadFile";
 
 const CATEGORIES = ["Dean", "Department", "Timetable", "Venue"] as const;
+
+function FileAttachmentRow({
+  hasDocument,
+  file,
+  existingFileName,
+  inputId,
+  disabled,
+  onToggle,
+  onFileChange,
+  onClearFile,
+}: {
+  hasDocument: boolean;
+  file: File | null;
+  existingFileName?: string;
+  inputId: string;
+  disabled: boolean;
+  onToggle: (checked: boolean) => void;
+  onFileChange: (file: File | null) => void;
+  onClearFile: () => void;
+}) {
+  return (
+    <div className="rounded-xl border border-stone-200 bg-stone-50 p-3">
+      <label className="flex cursor-pointer items-center gap-2">
+        <input
+          type="checkbox"
+          checked={hasDocument}
+          onChange={(e) => onToggle(e.target.checked)}
+          className="h-4 w-4 accent-primary"
+          disabled={disabled}
+        />
+        <span className="text-sm font-medium text-stone-700">
+          Attach a file (PDF, PNG, JPG or JPEG)
+        </span>
+      </label>
+
+      {hasDocument && (
+        <div className="mt-3">
+          {file ? (
+            <div className="mb-2 flex items-center justify-between rounded-lg border border-primary/30 bg-white px-3 py-2">
+              <span className="flex items-center gap-2 truncate text-sm text-stone-700">
+                <FileDown size={14} className="shrink-0 text-primary" />
+                <span className="truncate">{file.name}</span>
+              </span>
+              <button
+                type="button"
+                onClick={onClearFile}
+                disabled={disabled}
+                className="ml-2 shrink-0 text-stone-400 transition hover:text-stone-600 disabled:opacity-50"
+                aria-label="Remove selected file"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          ) : existingFileName ? (
+            <div className="mb-2 flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm text-stone-500">
+              <FileDown size={14} className="shrink-0 text-stone-400" />
+              <span className="truncate">Current: {existingFileName}</span>
+            </div>
+          ) : null}
+
+          <label
+            htmlFor={inputId}
+            className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-primary/40 bg-white px-4 py-2 text-sm font-medium text-primary transition hover:bg-primary/5 ${disabled ? "pointer-events-none opacity-50" : ""}`}
+          >
+            <Upload size={14} />
+            {file || existingFileName ? "Replace file" : "Browse file"}
+          </label>
+          <input
+            id={inputId}
+            type="file"
+            accept=".pdf,image/*"
+            onChange={(e) => onFileChange(e.target.files?.[0] ?? null)}
+            className="sr-only"
+            disabled={disabled}
+          />
+          <p className="mt-1.5 text-xs text-stone-400">PDF or image files accepted</p>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function DeanDashboard() {
   const { logout, method } = useAuth();
@@ -24,7 +106,10 @@ export function DeanDashboard() {
   const [creating, setCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Announcement | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedEditFile, setSelectedEditFile] = useState<File | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<Omit<Announcement, "id">>({
     title: "",
@@ -37,15 +122,36 @@ export function DeanDashboard() {
     hasDocument: false,
   });
 
+  const busy = isSaving || uploading;
+
+  const resetCreateForm = () => {
+    setForm({
+      title: "",
+      date: "",
+      time: "",
+      location: "",
+      description: "",
+      author: "Dean",
+      category: "Dean",
+      hasDocument: false,
+    });
+    setSelectedFile(null);
+  };
+
   const handleCreate = async () => {
     if (!form.title.trim() || !form.date || !form.description.trim()) {
       setError("Title, date and description are required");
       return;
     }
-    setIsLoading(true);
+    if (form.hasDocument && !selectedFile) {
+      setError("Please select a file to attach before creating this notice");
+      return;
+    }
+
+    setIsSaving(true);
     setError(null);
     try {
-      await addDoc(collection(db, "announcements"), {
+      const docRef = await addDoc(collection(db, "announcements"), {
         title: form.title,
         description: form.description,
         date: form.date,
@@ -54,31 +160,38 @@ export function DeanDashboard() {
         category: form.category,
         author: "Dean",
         hasDocument: form.hasDocument || false,
-        documentUrl: null,
+        documentUrl: "",
+        fileUrl: "",
+        documentName: "",
+        documentType: "",
         createdAt: serverTimestamp(),
       });
-      setForm({
-        title: "",
-        date: "",
-        time: "",
-        location: "",
-        description: "",
-        author: "Dean",
-        category: "Dean",
-        hasDocument: false,
-      });
+
+      if (form.hasDocument && selectedFile) {
+        setUploading(true);
+        const fileUrl = await uploadAnnouncementFile(selectedFile, form.title || docRef.id);
+        await updateDoc(docRef, {
+          documentUrl: fileUrl,
+          fileUrl,
+          documentName: selectedFile.name,
+          documentType: selectedFile.type || "application/octet-stream",
+        });
+      }
+
+      resetCreateForm();
       setCreating(false);
     } catch (err) {
       console.error("Error creating announcement:", err);
       setError("Failed to create announcement");
     } finally {
-      setIsLoading(false);
+      setUploading(false);
+      setIsSaving(false);
     }
   };
 
   const handleDelete = async (id: string | number) => {
     if (!window.confirm("Delete this announcement?")) return;
-    setIsLoading(true);
+    setIsSaving(true);
     setError(null);
     try {
       await deleteDoc(doc(db, "announcements", String(id)));
@@ -86,25 +199,30 @@ export function DeanDashboard() {
       console.error("Error deleting:", err);
       setError("Failed to delete announcement");
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
   };
 
   const handleStartEdit = (announcement: Announcement) => {
     setEditingId(String(announcement.id));
     setEditForm(announcement);
+    setSelectedEditFile(null);
   };
 
   const handleSaveEdit = async () => {
     if (!editForm) return;
-    setIsLoading(true);
+    if (editForm.hasDocument && !selectedEditFile && !editForm.documentUrl && !editForm.fileUrl) {
+      setError("Please select a file to attach for this notice");
+      return;
+    }
+
+    setIsSaving(true);
     setError(null);
     try {
       const docRef = doc(db, "announcements", String(editForm.id));
       const existing = await getDoc(docRef);
       const hasCreatedAt = existing.exists() && existing.data()?.createdAt;
-
-      await updateDoc(docRef, {
+      const updatePayload: Record<string, unknown> = {
         title: editForm.title,
         description: editForm.description,
         date: editForm.date,
@@ -114,142 +232,172 @@ export function DeanDashboard() {
         hasDocument: editForm.hasDocument || false,
         updatedAt: serverTimestamp(),
         ...(!hasCreatedAt ? { createdAt: serverTimestamp() } : {}),
-      });
+      };
+
+      if (editForm.hasDocument) {
+        if (selectedEditFile) {
+          setUploading(true);
+          const fileUrl = await uploadAnnouncementFile(
+            selectedEditFile,
+            String(editForm.title || editForm.id),
+          );
+          updatePayload.documentUrl = fileUrl;
+          updatePayload.fileUrl = fileUrl;
+          updatePayload.documentName = selectedEditFile.name;
+          updatePayload.documentType = selectedEditFile.type || "application/octet-stream";
+        } else {
+          updatePayload.documentUrl = editForm.documentUrl || editForm.fileUrl || "";
+          updatePayload.fileUrl = editForm.fileUrl || editForm.documentUrl || "";
+          updatePayload.documentName = editForm.documentName || "";
+          updatePayload.documentType = editForm.documentType || "";
+        }
+      } else {
+        updatePayload.documentUrl = "";
+        updatePayload.fileUrl = "";
+        updatePayload.documentName = "";
+        updatePayload.documentType = "";
+      }
+
+      await updateDoc(docRef, updatePayload);
       setEditingId(null);
       setEditForm(null);
+      setSelectedEditFile(null);
     } catch (err) {
       console.error("Error updating:", err);
       setError("Failed to update announcement");
     } finally {
-      setIsLoading(false);
+      setUploading(false);
+      setIsSaving(false);
     }
   };
 
-  
   return (
-    <div className="min-h-screen px-6 py-8">
-      <div className="max-w-6xl mx-auto">
-
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+    <div className="min-h-screen px-3 py-4 sm:px-5 lg:px-8">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Dean Dashboard</h1>
-            <div className="w-16 h-1 bg-primary mt-2"></div>
+            <h1 className="font-display text-3xl font-bold text-stone-950">Dean Dashboard</h1>
+            <div className="mt-2 h-1 w-16 bg-primary" />
           </div>
-          <div className="flex items-center gap-4">
-            <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
               {method === "google" ? "Google" : "Emergency"}
             </span>
-
-<button
-  onClick={async () => {
-    await logout();
-    navigate("/sipannouncements/secretlogin", { replace: true });
-  }}
-  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
->
-  Logout
-</button>
+            <button
+              onClick={async () => {
+                await logout();
+                navigate("/sipannouncements/secretlogin", { replace: true });
+              }}
+              className="rounded-lg bg-stone-200 px-4 py-2 font-medium text-stone-700 transition-colors hover:bg-stone-300"
+            >
+              Logout
+            </button>
           </div>
         </div>
 
-        {/* Error */}
         {error && (
-          <div className="mb-6 p-4 bg-red-100 border-2 border-red-300 text-red-700 rounded-lg">
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
             {error}
           </div>
         )}
 
-        {/* New Announcement Button */}
         <div className="mb-6">
           <button
             onClick={() => setCreating(!creating)}
-            disabled={isLoading}
-            className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50"
+            disabled={busy}
+            className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-semibold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
           >
             <Plus size={18} />
             New Announcement
           </button>
         </div>
 
-        {/* Create Form */}
         {creating && (
-          <div className="bg-white p-6 rounded-xl shadow-md border-2 border-primary/20 mb-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Create Announcement</h2>
+          <div className="mb-6 rounded-2xl border border-stone-100 bg-white p-5 shadow-sm sm:p-6">
+            <h2 className="mb-4 text-xl font-bold text-stone-950">Create Announcement</h2>
             <div className="space-y-3">
               <input
                 placeholder="Title *"
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="w-full p-2.5 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none"
-                disabled={isLoading}
+                className="w-full rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
+                disabled={busy}
               />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <input
                   type="date"
                   value={form.date}
                   onChange={(e) => setForm({ ...form, date: e.target.value })}
-                  className="p-2.5 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none"
-                  disabled={isLoading}
+                  className="rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
+                  disabled={busy}
                 />
                 <input
                   placeholder="Time (e.g. 10:00 AM)"
                   value={form.time || ""}
                   onChange={(e) => setForm({ ...form, time: e.target.value })}
-                  className="p-2.5 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none"
-                  disabled={isLoading}
+                  className="rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
+                  disabled={busy}
                 />
               </div>
               <input
                 placeholder="Location (optional)"
                 value={form.location || ""}
                 onChange={(e) => setForm({ ...form, location: e.target.value })}
-                className="w-full p-2.5 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none"
-                disabled={isLoading}
+                className="w-full rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
+                disabled={busy}
               />
               <textarea
                 placeholder="Description *"
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
-                className="w-full p-2.5 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none resize-none"
-                rows={3}
-                disabled={isLoading}
+                className="w-full resize-none rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
+                rows={4}
+                disabled={busy}
               />
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-4">
                 <select
                   value={form.category}
                   onChange={(e) => setForm({ ...form, category: e.target.value as any })}
-                  className="p-2.5 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none"
-                  disabled={isLoading}
+                  className="rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
+                  disabled={busy}
                 >
                   {CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>{cat}</option>
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
                   ))}
                 </select>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={form.hasDocument || false}
-                    onChange={(e) => setForm({ ...form, hasDocument: e.target.checked })}
-                    className="w-4 h-4"
-                    disabled={isLoading}
-                  />
-                  <span className="text-sm font-medium text-gray-700">Has PDF</span>
-                </label>
               </div>
+
+              <FileAttachmentRow
+                hasDocument={form.hasDocument || false}
+                file={selectedFile}
+                inputId="create-file-input"
+                disabled={busy}
+                onToggle={(checked) => {
+                  setForm({ ...form, hasDocument: checked });
+                  if (!checked) setSelectedFile(null);
+                }}
+                onFileChange={setSelectedFile}
+                onClearFile={() => setSelectedFile(null)}
+              />
+
               <div className="flex gap-2 pt-2">
                 <button
                   onClick={handleCreate}
-                  disabled={isLoading}
-                  className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50"
+                  disabled={busy}
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 font-semibold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
                 >
                   <Check size={16} />
-                  {isLoading ? "Creating..." : "Create"}
+                  {uploading ? "Uploading..." : isSaving ? "Creating..." : "Create"}
                 </button>
                 <button
-                  onClick={() => setCreating(false)}
-                  disabled={isLoading}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors disabled:opacity-50"
+                  onClick={() => {
+                    setCreating(false);
+                    resetCreateForm();
+                  }}
+                  disabled={busy}
+                  className="rounded-xl bg-stone-200 px-4 py-2 font-semibold text-stone-700 transition-colors hover:bg-stone-300 disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -258,93 +406,102 @@ export function DeanDashboard() {
           </div>
         )}
 
-        {/* Announcements List */}
-        <h2 className="text-xl font-bold text-gray-900 mb-4">
+        <h2 className="mb-4 text-xl font-bold text-stone-950">
           Announcements ({announcements.length})
         </h2>
         <div className="space-y-4">
           {announcements.length === 0 ? (
-            <div className="bg-white rounded-xl p-8 text-center text-gray-500">
-              No announcements yet. Create one to get started!
+            <div className="rounded-2xl border border-stone-100 bg-white p-8 text-center text-stone-500">
+              No announcements yet. Create one to get started.
             </div>
           ) : (
             announcements.map((a) =>
               editingId === String(a.id) && editForm ? (
-                // Edit mode
-                <div key={a.id} className="bg-white p-6 rounded-xl shadow-md border-2 border-primary/30">
-                  <h3 className="font-bold text-gray-900 mb-3">Editing: {a.title}</h3>
+                <div key={a.id} className="rounded-2xl border border-primary/30 bg-white p-5 shadow-sm sm:p-6">
+                  <h3 className="mb-3 font-bold text-stone-950">Editing: {a.title}</h3>
                   <div className="space-y-3">
                     <input
                       value={editForm.title}
                       onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                      className="w-full p-2.5 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none"
-                      disabled={isLoading}
+                      className="w-full rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
+                      disabled={busy}
                     />
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid gap-3 sm:grid-cols-2">
                       <input
                         type="date"
                         value={editForm.date}
                         onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
-                        className="p-2.5 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none"
-                        disabled={isLoading}
+                        className="rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
+                        disabled={busy}
                       />
                       <input
                         placeholder="Time"
                         value={editForm.time || ""}
                         onChange={(e) => setEditForm({ ...editForm, time: e.target.value })}
-                        className="p-2.5 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none"
-                        disabled={isLoading}
+                        className="rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
+                        disabled={busy}
                       />
                     </div>
                     <input
                       placeholder="Location"
                       value={editForm.location || ""}
                       onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
-                      className="w-full p-2.5 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none"
-                      disabled={isLoading}
+                      className="w-full rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
+                      disabled={busy}
                     />
                     <textarea
                       value={editForm.description}
                       onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                      className="w-full p-2.5 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none resize-none"
-                      rows={3}
-                      disabled={isLoading}
+                      className="w-full resize-none rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
+                      rows={4}
+                      disabled={busy}
                     />
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-wrap items-center gap-4">
                       <select
                         value={editForm.category}
                         onChange={(e) => setEditForm({ ...editForm, category: e.target.value as any })}
-                        className="p-2.5 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none"
-                        disabled={isLoading}
+                        className="rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
+                        disabled={busy}
                       >
                         {CATEGORIES.map((cat) => (
-                          <option key={cat} value={cat}>{cat}</option>
+                          <option key={cat} value={cat}>
+                            {cat}
+                          </option>
                         ))}
                       </select>
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={editForm.hasDocument || false}
-                          onChange={(e) => setEditForm({ ...editForm, hasDocument: e.target.checked })}
-                          className="w-4 h-4"
-                          disabled={isLoading}
-                        />
-                        <span className="text-sm font-medium text-gray-700">Has PDF</span>
-                      </label>
                     </div>
+
+                    <FileAttachmentRow
+                      hasDocument={editForm.hasDocument || false}
+                      file={selectedEditFile}
+                      existingFileName={editForm.documentName}
+                      inputId="edit-file-input"
+                      disabled={busy}
+                      onToggle={(checked) => {
+                        setEditForm({ ...editForm, hasDocument: checked });
+                        if (!checked) setSelectedEditFile(null);
+                      }}
+                      onFileChange={setSelectedEditFile}
+                      onClearFile={() => setSelectedEditFile(null)}
+                    />
+
                     <div className="flex gap-2 pt-2">
                       <button
                         onClick={handleSaveEdit}
-                        disabled={isLoading}
-                        className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50"
+                        disabled={busy}
+                        className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 font-semibold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
                       >
                         <Check size={16} />
-                        {isLoading ? "Saving..." : "Save"}
+                        {uploading ? "Uploading..." : isSaving ? "Saving..." : "Save"}
                       </button>
                       <button
-                        onClick={() => { setEditingId(null); setEditForm(null); }}
-                        disabled={isLoading}
-                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors disabled:opacity-50"
+                        onClick={() => {
+                          setEditingId(null);
+                          setEditForm(null);
+                          setSelectedEditFile(null);
+                        }}
+                        disabled={busy}
+                        className="rounded-xl bg-stone-200 px-4 py-2 font-semibold text-stone-700 transition-colors hover:bg-stone-300 disabled:opacity-50"
                       >
                         Cancel
                       </button>
@@ -352,45 +509,46 @@ export function DeanDashboard() {
                   </div>
                 </div>
               ) : (
-                // View mode
-                <div key={a.id} className="bg-white p-5 rounded-xl shadow-sm border-l-4 border-primary flex items-start justify-between">
+                <div key={a.id} className="flex items-start justify-between gap-4 rounded-2xl border border-stone-100 bg-white p-5 shadow-sm">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-medium">
+                    <div className="mb-2 flex flex-wrap items-center gap-2">
+                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
                         {a.category}
                       </span>
                       {a.hasDocument && (
-                        <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-medium">
-                          📄 PDF
+                        <span className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-500">
+                          <FileDown size={13} />
+                          {a.documentType?.includes("image") ? "Image" : "PDF"}
                         </span>
                       )}
                     </div>
-                    <h3 className="font-bold text-gray-900 text-lg">{a.title}</h3>
-                    <p className="text-gray-600 text-sm mt-1">{a.description}</p>
-                    <div className="flex flex-wrap gap-3 mt-2 text-xs text-gray-500">
+                    <h3 className="text-lg font-bold text-stone-950">{a.title}</h3>
+                    <p className="mt-1 text-sm text-stone-500">{a.description}</p>
+                    <div className="mt-2 flex flex-wrap gap-3 text-xs text-stone-400">
                       <span>📅 {new Date(a.date).toLocaleDateString()}</span>
                       {a.time && <span>⏰ {a.time}</span>}
                       {a.location && <span>📍 {a.location}</span>}
+                      {a.documentName && <span>File: {a.documentName}</span>}
                     </div>
                   </div>
-                  <div className="flex gap-2 ml-4">
+                  <div className="flex gap-2">
                     <button
                       onClick={() => handleStartEdit(a)}
-                      disabled={isLoading}
-                      className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors disabled:opacity-50"
+                      disabled={busy}
+                      className="rounded-lg p-2 text-primary transition-colors hover:bg-primary/10 disabled:opacity-50"
                     >
                       <Edit2 size={18} />
                     </button>
                     <button
                       onClick={() => handleDelete(a.id)}
-                      disabled={isLoading}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                      disabled={busy}
+                      className="rounded-lg p-2 text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
                     >
                       <Trash2 size={18} />
                     </button>
                   </div>
                 </div>
-              )
+              ),
             )
           )}
         </div>
