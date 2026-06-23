@@ -12,21 +12,16 @@ import { ProtectedRoute } from "../components/ProtectedRoute";
 import { DotGrid } from "./components/DotGrid";
 import ClickSpark from "./components/ClickSpark";
 
-const STARTUP_NOTICE_KEY = "rvce_startup_notice_seen";
 const RVCE_WEBSITE = "https://rvce.edu.in/";
 
 function StartupNotice() {
-  const [open, setOpen] = useState(() =>
-    window.sessionStorage.getItem(STARTUP_NOTICE_KEY) !== "1",
-  );
+  const [open, setOpen] = useState(true);
 
   const dismiss = () => {
-    window.sessionStorage.setItem(STARTUP_NOTICE_KEY, "1");
     setOpen(false);
   };
 
   const goToWebsite = () => {
-    window.sessionStorage.setItem(STARTUP_NOTICE_KEY, "1");
     window.open(RVCE_WEBSITE, "_blank", "noopener,noreferrer");
     setOpen(false);
   };

@@ -14,7 +14,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { Announcement } from "../data/announcements";
-import { uploadAnnouncementFile } from "../utils/uploadFile";
+import { uploadAnnouncementFile } from "../utils/uploadfile";
 
 const CATEGORIES = ["Dean", "Department", "Timetable", "Venue"] as const;
 
@@ -52,49 +52,51 @@ function FileAttachmentRow({
         </span>
       </label>
 
-      {hasDocument && (
-        <div className="mt-3">
-          {file ? (
-            <div className="mb-2 flex items-center justify-between rounded-lg border border-primary/30 bg-white px-3 py-2">
-              <span className="flex items-center gap-2 truncate text-sm text-stone-700">
-                <FileDown size={14} className="shrink-0 text-primary" />
-                <span className="truncate">{file.name}</span>
-              </span>
-              <button
-                type="button"
-                onClick={onClearFile}
-                disabled={disabled}
-                className="ml-2 shrink-0 text-stone-400 transition hover:text-stone-600 disabled:opacity-50"
-                aria-label="Remove selected file"
-              >
-                <X size={14} />
-              </button>
-            </div>
-          ) : existingFileName ? (
-            <div className="mb-2 flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm text-stone-500">
-              <FileDown size={14} className="shrink-0 text-stone-400" />
-              <span className="truncate">Current: {existingFileName}</span>
-            </div>
-          ) : null}
+      <div className="mt-3 space-y-2">
+        {file ? (
+          <div className="flex items-center justify-between rounded-lg border border-primary/30 bg-white px-3 py-2">
+            <span className="flex items-center gap-2 truncate text-sm text-stone-700">
+              <FileDown size={14} className="shrink-0 text-primary" />
+              <span className="truncate">{file.name}</span>
+            </span>
+            <button
+              type="button"
+              onClick={onClearFile}
+              disabled={disabled}
+              className="ml-2 shrink-0 text-stone-400 transition hover:text-stone-600 disabled:opacity-50"
+              aria-label="Remove selected file"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        ) : existingFileName ? (
+          <div className="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm text-stone-500">
+            <FileDown size={14} className="shrink-0 text-stone-400" />
+            <span className="truncate">Current: {existingFileName}</span>
+          </div>
+        ) : null}
 
-          <label
-            htmlFor={inputId}
-            className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-primary/40 bg-white px-4 py-2 text-sm font-medium text-primary transition hover:bg-primary/5 ${disabled ? "pointer-events-none opacity-50" : ""}`}
-          >
-            <Upload size={14} />
-            {file || existingFileName ? "Replace file" : "Browse file"}
-          </label>
-          <input
-            id={inputId}
-            type="file"
-            accept=".pdf,image/*"
-            onChange={(e) => onFileChange(e.target.files?.[0] ?? null)}
-            className="sr-only"
-            disabled={disabled}
-          />
-          <p className="mt-1.5 text-xs text-stone-400">PDF or image files accepted</p>
+        <input
+          id={inputId}
+          type="file"
+          accept=".pdf,image/*"
+          onChange={(e) => {
+            const nextFile = e.target.files?.[0] ?? null;
+            onFileChange(nextFile);
+            if (nextFile) {
+              onToggle(true);
+            }
+          }}
+          className={`block w-full cursor-pointer rounded-lg border border-dashed border-primary/40 bg-white px-4 py-2 text-sm text-stone-600 file:mr-4 file:rounded-full file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:bg-primary/5 ${disabled ? "cursor-not-allowed opacity-50" : ""}`}
+          disabled={disabled}
+        />
+        <div className="flex flex-wrap items-center gap-2">
+          <Upload size={14} className="text-primary" />
+          <p className="text-xs text-stone-400">
+            PDF, PNG, JPG or JPEG accepted. Choosing a file enables the attachment automatically.
+          </p>
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -378,7 +380,12 @@ export function DeanDashboard() {
                   setForm({ ...form, hasDocument: checked });
                   if (!checked) setSelectedFile(null);
                 }}
-                onFileChange={setSelectedFile}
+                onFileChange={(file) => {
+                  setSelectedFile(file);
+                  if (file) {
+                    setForm({ ...form, hasDocument: true });
+                  }
+                }}
                 onClearFile={() => setSelectedFile(null)}
               />
 
@@ -481,7 +488,12 @@ export function DeanDashboard() {
                         setEditForm({ ...editForm, hasDocument: checked });
                         if (!checked) setSelectedEditFile(null);
                       }}
-                      onFileChange={setSelectedEditFile}
+                      onFileChange={(file) => {
+                        setSelectedEditFile(file);
+                        if (file) {
+                          setEditForm({ ...editForm, hasDocument: true });
+                        }
+                      }}
                       onClearFile={() => setSelectedEditFile(null)}
                     />
 

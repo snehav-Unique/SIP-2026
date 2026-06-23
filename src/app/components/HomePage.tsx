@@ -70,10 +70,7 @@ export function HomePage() {
                 duration={0.6}
                 className="block text-3xl font-bold leading-tight text-stone-950 sm:text-4xl lg:text-[2.6rem]"
               />
-              <p className="max-w-2xl text-sm leading-7 text-stone-500 sm:text-base">
-                Notices, schedules, map access and student support, arranged in a clean first-year portal that works well on both desktop and phones.
-              </p>
-            </div>
+              </div>
           </SpotlightCard>
         </AnimatedContent>
 
@@ -186,14 +183,8 @@ export function HomePage() {
             </SpotlightCard>
           </AnimatedContent>
 
-          <AnimatedContent distance={22} delay={0.08} duration={0.6}>
-            <SpotlightCard className="rounded-2xl border border-stone-100 bg-white p-4 sm:p-5">
-              <h2 className="font-display text-base font-bold text-stone-950 mb-3">Campus Help</h2>
-              <p className="text-sm leading-6 text-stone-500">
-                Use the notices page for circulars and the map for venue navigation. The map now resolves common location aliases like civil seminar and civil terrace to the Civil Dept marker.
-              </p>
-            </SpotlightCard>
-          </AnimatedContent>
+        
+        
         </div>
       </div>
     </div>
