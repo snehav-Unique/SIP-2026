@@ -21,6 +21,20 @@ function formatShortDate(dateString: string) {
   }).format(new Date(dateString));
 }
 
+function parseTimeToMinutes(timeStr: string) {
+  if (!timeStr) return Number.MAX_SAFE_INTEGER; // Push TBA to end
+  const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (!match) return Number.MAX_SAFE_INTEGER;
+  let hours = parseInt(match[1], 10);
+  const mins = parseInt(match[2], 10);
+  const period = match[3].toUpperCase();
+  
+  if (period === "PM" && hours !== 12) hours += 12;
+  if (period === "AM" && hours === 12) hours = 0;
+  
+  return hours * 60 + mins;
+}
+
 function getVisibleSessions(selectedCycle: CycleType | null) {
   if (!selectedCycle) return [];
   return scheduleData.filter(
@@ -89,7 +103,7 @@ export function SchedulePage() {
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([date, items]) => ({
         date,
-        items: [...items].sort((a, b) => (a.time ?? "").localeCompare(b.time ?? "")),
+        items: [...items].sort((a, b) => parseTimeToMinutes(a.time ?? "") - parseTimeToMinutes(b.time ?? "")),
       }));
   }, [visibleSessions]);
 

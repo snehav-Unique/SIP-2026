@@ -15,6 +15,31 @@ import {
 import { db } from "../config/firebase";
 import { Announcement } from "../data/announcements";
 import { uploadAnnouncementFile } from "../utils/uploadfile";
+import dayjs, { Dayjs } from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+
+dayjs.extend(customParseFormat);
+
+const muiTheme = createTheme({
+  palette: {
+    primary: { main: '#F96500' },
+  },
+  typography: {
+    fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
+  },
+});
+
+function parseTime(timeStr: string | undefined): Dayjs | null {
+  if (!timeStr) return null;
+  if (timeStr.includes("AM") || timeStr.includes("PM")) {
+    return dayjs(timeStr, "hh:mm A");
+  }
+  return dayjs(timeStr, "HH:mm");
+}
 
 const CATEGORIES = ["Dean", "Department", "Timetable", "Venue"] as const;
 
@@ -333,13 +358,29 @@ export function DeanDashboard() {
                   className="rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
                   disabled={busy}
                 />
-                <input
-                  placeholder="Time (e.g. 10:00 AM)"
-                  value={form.time || ""}
-                  onChange={(e) => setForm({ ...form, time: e.target.value })}
-                  className="rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
-                  disabled={busy}
-                />
+                <ThemeProvider theme={muiTheme}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <TimePicker
+                      label="Time"
+                      value={parseTime(form.time)}
+                      onChange={(newValue) => setForm({ ...form, time: newValue ? newValue.format('HH:mm') : '' })}
+                      disabled={busy}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          sx: {
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: '0.5rem',
+                              '& fieldset': { borderColor: '#E5E7EB' },
+                              '&:hover fieldset': { borderColor: '#F96500' },
+                              '&.Mui-focused fieldset': { borderColor: '#F96500' },
+                            },
+                          },
+                        },
+                      }}
+                    />
+                  </LocalizationProvider>
+                </ThemeProvider>
               </div>
               <input
                 placeholder="Location (optional)"
@@ -441,13 +482,29 @@ export function DeanDashboard() {
                         className="rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
                         disabled={busy}
                       />
-                      <input
-                        placeholder="Time"
-                        value={editForm.time || ""}
-                        onChange={(e) => setEditForm({ ...editForm, time: e.target.value })}
-                        className="rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
-                        disabled={busy}
-                      />
+                      <ThemeProvider theme={muiTheme}>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                          <TimePicker
+                            label="Time"
+                            value={parseTime(editForm.time)}
+                            onChange={(newValue) => setEditForm({ ...editForm, time: newValue ? newValue.format('HH:mm') : '' })}
+                            disabled={busy}
+                            slotProps={{
+                              textField: {
+                                fullWidth: true,
+                                sx: {
+                                  '& .MuiOutlinedInput-root': {
+                                    borderRadius: '0.5rem',
+                                    '& fieldset': { borderColor: '#E5E7EB' },
+                                    '&:hover fieldset': { borderColor: '#F96500' },
+                                    '&.Mui-focused fieldset': { borderColor: '#F96500' },
+                                  },
+                                },
+                              },
+                            }}
+                          />
+                        </LocalizationProvider>
+                      </ThemeProvider>
                     </div>
                     <input
                       placeholder="Location"
