@@ -13,6 +13,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { Announcement } from "../data/announcements";
+import { campusLocations } from "../data/campusLocations";
 import { uploadAnnouncementFile } from "../utils/uploadfile";
 import dayjs, { Dayjs } from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
@@ -390,13 +391,21 @@ export function DeanDashboard() {
                   </LocalizationProvider>
                 </ThemeProvider>
               </div>
-              <input
-                placeholder="Location (optional)"
+              <select
                 value={form.location || ""}
                 onChange={(e) => setForm({ ...form, location: e.target.value })}
                 className="w-full rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
                 disabled={busy}
-              />
+              >
+                <option value="">Location (optional)</option>
+                {campusLocations
+                  .filter((loc) => loc.category === "Academic")
+                  .map((loc) => (
+                    <option key={loc.name} value={loc.name}>
+                      {loc.name}
+                    </option>
+                  ))}
+              </select>
               <textarea
                 placeholder="Description *"
                 value={form.description}
@@ -519,13 +528,21 @@ export function DeanDashboard() {
                         </LocalizationProvider>
                       </ThemeProvider>
                     </div>
-                    <input
-                      placeholder="Location"
+                    <select
                       value={editForm.location || ""}
                       onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
                       className="w-full rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
                       disabled={busy}
-                    />
+                    >
+                      <option value="">Location</option>
+                      {campusLocations
+                        .filter((loc) => loc.category === "Academic")
+                        .map((loc) => (
+                          <option key={loc.name} value={loc.name}>
+                            {loc.name}
+                          </option>
+                        ))}
+                    </select>
                     <textarea
                       value={editForm.description}
                       onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
