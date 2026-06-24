@@ -37,7 +37,12 @@ export function getAnnouncementTimeRange(announcement: Announcement) {
   const end = endText ? parseTimePart(baseDate, endText) : null;
 
   if (start && end) return { start, end };
-  if (start) return { start, end: new Date(start.getTime() + 60 * 60 * 1000) };
+  if (start) {
+  // no end time — keep visible until end of that day
+  const endOfDay = new Date(baseDate);
+  endOfDay.setHours(23, 59, 59, 999);
+  return { start, end: endOfDay };
+}
 
   const fallbackStart = new Date(baseDate);
   fallbackStart.setHours(0, 0, 0, 0);

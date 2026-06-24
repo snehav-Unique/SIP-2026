@@ -1,149 +1,127 @@
-import { useNavigate } from "react-router";
-import { Calendar, MapPin, Download, Clock, User, FileDown } from "lucide-react";
+import { useMemo } from "react";
+import { CalendarDays, Clock3, ExternalLink, MapPin } from "lucide-react";
+import AnimatedContent from "../../components/AnimatedContent";
+import SplitText from "../../components/SplitText";
 import { useAnnouncements } from "../../hooks/useAnnouncements";
-import { Announcement } from "../../data/announcements";
-import { getAnnouncementTimeRange } from "../../utils/announcementTiming";
+import { isAnnouncementCurrentOrUpcoming } from "../../utils/announcementTiming";
 
 export function AnnouncementsPage() {
-  const navigate = useNavigate();
-  const { announcements } = useAnnouncements();
+  const { announcements, loading, error } = useAnnouncements();
 
-  const now = new Date();
-
-  const upcoming = announcements
-    .filter((a) => {
-      const range = getAnnouncementTimeRange(a);
-      return range ? range.end >= now : false;
-    })
-    .sort((a, b) => {
-      const aStart = getAnnouncementTimeRange(a)?.start?.getTime() ?? 0;
-      const bStart = getAnnouncementTimeRange(b)?.start?.getTime() ?? 0;
-      return aStart - bStart;
-    });
-
-  const past = announcements
-    .filter((a) => {
-      const range = getAnnouncementTimeRange(a);
-      return range ? range.end < now : false;
-    })
-    .sort((a, b) => {
-      const aStart = getAnnouncementTimeRange(a)?.start?.getTime() ?? 0;
-      const bStart = getAnnouncementTimeRange(b)?.start?.getTime() ?? 0;
-      return bStart - aStart;
-    });
-
-  const handleMapNavigation = (announcement: Announcement) => {
-    const params = new URLSearchParams();
-    if (announcement.location) {
-      params.set("destination", announcement.location);
-    }
-    params.set("event", String(announcement.id));
-    navigate(`/map?${params.toString()}`);
-  };
-
-  const AnnouncementCard = ({ announcement }: { announcement: Announcement }) => (
-    <div className="rounded-2xl border border-stone-100 bg-white p-5 shadow-sm transition-shadow hover:shadow-md sm:p-6">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1">
-          <div className="mb-3 flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-              {announcement.category}
-            </span>
-            {announcement.hasDocument && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-500">
-                <FileDown size={13} />
-                {announcement.documentType?.includes("image") ? "Image attachment" : "PDF available"}
-              </span>
-            )}
-          </div>
-          <h2 className="text-xl font-bold text-stone-950 sm:text-2xl">{announcement.title}</h2>
-          <p className="mt-2 text-sm leading-7 text-stone-500">{announcement.description}</p>
-          <div className="mt-4 flex flex-wrap gap-4 text-sm text-stone-500">
-            <div className="flex items-center gap-2">
-              <User size={16} className="text-primary" />
-              <span>{announcement.author}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Calendar size={16} className="text-primary" />
-              <span>{new Date(announcement.date).toLocaleDateString()}</span>
-            </div>
-            {announcement.time && (
-              <div className="flex items-center gap-2">
-                <Clock size={16} className="text-primary" />
-                <span>{announcement.time}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {announcement.location && (
-        <div className="mt-5 rounded-2xl bg-stone-50 p-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-2 text-stone-600">
-              <MapPin size={18} className="text-primary" />
-              <span className="font-medium">{announcement.location}</span>
-            </div>
-            <button
-              onClick={() => handleMapNavigation(announcement)}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-            >
-              <MapPin size={16} />
-              View on Map
-            </button>
-          </div>
-        </div>
-      )}
-
-      {announcement.hasDocument && announcement.fileUrl && (
-        <div className="mt-4">
-          <a
-            href={announcement.fileUrl}
-            target="_blank"
-            rel="noreferrer"
-            download={announcement.documentName || "announcement-attachment"}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-primary bg-white px-4 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-white"
-          >
-            <Download size={18} />
-            Download {announcement.documentType?.includes("image") ? "Image" : "PDF"}
-          </a>
-        </div>
-      )}
-    </div>
-  );
+  const visibleAnnouncements = useMemo(() => {
+    const now = new Date();
+    return announcements
+      .filter((announcement) => isAnnouncementCurrentOrUpcoming(announcement, now))
+      .sort((a, b) => {
+        const dateDiff = new Date(a.date).getTime() - new Date(b.date).getTime();
+        if (dateDiff !== 0) return dateDiff;
+        return (a.time ?? "").localeCompare(b.time ?? "");
+      });
+  }, [announcements]);
 
   return (
     <div className="min-h-screen px-3 py-4 sm:px-5 lg:px-8">
-      <div className="mx-auto max-w-7xl space-y-4">
-        <div>
-          <h1 className="font-display text-2xl font-bold text-stone-950 sm:text-3xl">Announcements</h1>
-          <p className="mt-1 text-sm text-stone-500">Stay updated with the latest circulars, notices and downloadable files.</p>
-        </div>
+      <div className="mx-auto max-w-6xl space-y-4">
+        <section className="overflow-hidden rounded-[2rem] border border-stone-200/70 bg-white/90 p-5 shadow-[0_18px_60px_rgba(28,25,23,0.08)] backdrop-blur sm:p-6">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-primary">
+              <CalendarDays size={13} />
+              Announcements
+            </div>
+            <h1 className="mt-4 text-3xl font-bold tracking-tight text-stone-950 sm:text-4xl">
+              Latest notices and updates
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-7 text-stone-500">
+              Browse current and upcoming RVCE notices, office updates, and event alerts in one place.
+            </p>
+          </div>
+        </section>
 
-        <div className="grid gap-4">
-          {upcoming.length === 0 ? (
-            <div className="rounded-2xl border border-stone-100 bg-white p-6 text-center text-stone-500">
-              No upcoming announcements.
-            </div>
-          ) : (
-            upcoming.map((a) => <AnnouncementCard key={a.id} announcement={a} />)
-          )}
-        </div>
-
-        {past.length > 0 && (
-          <div className="pt-4">
-            <div className="mb-5 flex items-center gap-4">
-              <div className="h-px flex-1 bg-stone-200" />
-              <span className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-400">
-                Past Announcements
-              </span>
-              <div className="h-px flex-1 bg-stone-200" />
-            </div>
-            <div className="grid gap-4 opacity-80">
-              {past.map((a) => <AnnouncementCard key={a.id} announcement={a} />)}
-            </div>
+        {error && (
+          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
           </div>
         )}
+
+        <div className="space-y-4">
+          {loading ? (
+            <div className="rounded-2xl border border-stone-100 bg-white p-8 text-center text-sm text-stone-500">
+              Loading announcements...
+            </div>
+          ) : visibleAnnouncements.length === 0 ? (
+            <div className="rounded-2xl border border-stone-100 bg-white p-8 text-center text-sm text-stone-500">
+              No current or upcoming announcements right now.
+            </div>
+          ) : (
+            visibleAnnouncements.map((announcement) => (
+              <AnimatedContent
+                key={announcement.id}
+                distance={20}
+                duration={0.6}
+                threshold={0.05}
+              >
+                <article className="rounded-[1.75rem] border border-stone-200/70 bg-white/95 p-5 shadow-[0_12px_40px_rgba(28,25,23,0.06)] sm:p-6">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="space-y-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+                          {announcement.category}
+                        </span>
+                      </div>
+                      <div>
+                        <SplitText
+                          text={announcement.title}
+                          tag="h2"
+                          splitType="words"
+                          textAlign="left"
+                          delay={38}
+                          duration={0.6}
+                          className="block text-xl font-bold text-stone-950"
+                        />
+                        <AnimatedContent distance={10} duration={0.5} threshold={0.05}>
+                          <p className="mt-2 max-w-3xl text-sm leading-7 text-stone-500">
+                            {announcement.description}
+                          </p>
+                        </AnimatedContent>
+                      </div>
+                    </div>
+
+                    {announcement.hasDocument && (
+                      <a
+                        href={announcement.documentUrl || announcement.fileUrl || "#"}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center justify-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-600 transition-colors hover:border-primary hover:text-primary"
+                      >
+                        <ExternalLink size={15} />
+                        Open file
+                      </a>
+                    )}
+                  </div>
+
+                  <div className="mt-5 flex flex-wrap gap-3 text-sm text-stone-500">
+                    <span className="inline-flex items-center gap-2 rounded-full bg-stone-50 px-3 py-1.5">
+                      <CalendarDays size={14} className="text-primary" />
+                      {new Date(announcement.date).toLocaleDateString()}
+                    </span>
+                    {announcement.time && (
+                      <span className="inline-flex items-center gap-2 rounded-full bg-stone-50 px-3 py-1.5">
+                        <Clock3 size={14} className="text-primary" />
+                        {announcement.time}
+                      </span>
+                    )}
+                    {announcement.location && (
+                      <span className="inline-flex items-center gap-2 rounded-full bg-stone-50 px-3 py-1.5">
+                        <MapPin size={14} className="text-primary" />
+                        {announcement.location}
+                      </span>
+                    )}
+                  </div>
+                </article>
+              </AnimatedContent>
+            ))
+          )}
+        </div>
       </div>
     </div>
   );
