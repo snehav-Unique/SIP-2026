@@ -4,13 +4,12 @@ import { useAnnouncements } from "../hooks/useAnnouncements";
 import { Check, Edit2, Trash2, Plus, Upload, FileDown, X } from "lucide-react";
 import { useNavigate } from "react-router";
 import {
-  addDoc,
   collection,
   serverTimestamp,
   deleteDoc,
   doc,
-  updateDoc,
   getDoc,
+  setDoc,
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { Announcement } from "../data/announcements";
@@ -178,7 +177,21 @@ export function DeanDashboard() {
     setIsSaving(true);
     setError(null);
     try {
-      const docRef = await addDoc(collection(db, "announcements"), {
+      const docRef = doc(collection(db, "announcements"));
+      let documentUrl = "";
+      let fileUrl = "";
+      let documentName = "";
+      let documentType = "";
+
+      if (form.hasDocument && selectedFile) {
+        setUploading(true);
+        fileUrl = await uploadAnnouncementFile(selectedFile, docRef.id);
+        documentUrl = fileUrl;
+        documentName = selectedFile.name;
+        documentType = selectedFile.type || "application/octet-stream";
+      }
+
+      await setDoc(docRef, {
         title: form.title,
         description: form.description,
         date: form.date,
@@ -187,23 +200,12 @@ export function DeanDashboard() {
         category: form.category,
         author: "Dean",
         hasDocument: form.hasDocument || false,
-        documentUrl: "",
-        fileUrl: "",
-        documentName: "",
-        documentType: "",
+        documentUrl,
+        fileUrl,
+        documentName,
+        documentType,
         createdAt: serverTimestamp(),
       });
-
-      if (form.hasDocument && selectedFile) {
-        setUploading(true);
-        const fileUrl = await uploadAnnouncementFile(selectedFile, form.title || docRef.id);
-        await updateDoc(docRef, {
-          documentUrl: fileUrl,
-          fileUrl,
-          documentName: selectedFile.name,
-          documentType: selectedFile.type || "application/octet-stream",
-        });
-      }
 
       resetCreateForm();
       setCreating(false);
@@ -285,7 +287,7 @@ export function DeanDashboard() {
         updatePayload.documentType = "";
       }
 
-      await updateDoc(docRef, updatePayload);
+      await setDoc(docRef, updatePayload, { merge: true });
       setEditingId(null);
       setEditForm(null);
       setSelectedEditFile(null);

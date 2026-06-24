@@ -9,9 +9,13 @@ import { storage } from "../config/firebase";
  * @returns The download URL of the uploaded file
  */
 export async function uploadAnnouncementFile(file: File, namePrefix: string): Promise<string> {
+  if (!storage.app.options.storageBucket) {
+    throw new Error("Firebase Storage bucket is not configured.");
+  }
+
   // Sanitize prefix to be URL and filesystem safe
   const safePrefix = namePrefix.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
-  const fileExtension = file.name.split(".").pop();
+  const fileExtension = file.name.split(".").pop() || "bin";
   const fileName = `${safePrefix}-${Date.now()}.${fileExtension}`;
   
   // Create a reference to 'announcement-attachments/{fileName}'

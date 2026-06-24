@@ -138,9 +138,7 @@ export function SchedulePage() {
               <h1 className="mt-4 text-3xl font-bold tracking-tight text-stone-950 sm:text-4xl lg:text-5xl">
                 Student induction schedule
               </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-500 sm:text-base">
-                The page now filters directly to your chosen cycle. Edit the session objects in `src/data/scheduleData.ts` whenever the schedule changes.
-              </p>
+             
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[24rem]">
