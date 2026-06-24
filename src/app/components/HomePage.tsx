@@ -9,6 +9,7 @@ import {
   Phone,
   ShieldCheck,
   Download,
+  Briefcase,
 } from "lucide-react";
 import AnimatedContent from "../../components/AnimatedContent";
 import SplitText from "../../components/SplitText";
@@ -21,6 +22,12 @@ const resourceCards = [
   { label: "Parent Helpdesk", value: "+91 80 6818 8181", icon: Phone },
   { label: "Student Affairs", value: "Dean Office, Admin Block", icon: ShieldCheck },
   { label: "Emergency Contact", value: "Security Desk, Main Gate", icon: AlertTriangle },
+  {
+    label: "Placement Cell",
+    value: "www.lastminuteplacementprep.in",
+    icon: Briefcase,
+    href: "https://www.lastminuteplacementprep.in",
+  },
 ];
 
 export function HomePage() {
@@ -167,16 +174,38 @@ export function HomePage() {
               <div className="space-y-3">
                 {resourceCards.map((item) => {
                   const Icon = item.icon;
-                  return (
-                    <div key={item.label} className="flex items-start gap-3">
+                  const content = (
+                    <div className="flex items-start gap-3">
                       <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                         <Icon size={13} />
                       </div>
                       <div>
                         <p className="text-xs font-bold text-stone-900">{item.label}</p>
-                        <p className="text-xs text-stone-400">{item.value}</p>
+                       {item.href ? (
+  <p className="text-xs text-blue-500 underline underline-offset-2">{item.value}</p>
+) : (
+  <p className="text-xs text-stone-400">{item.value}</p>
+)}
                       </div>
                     </div>
+                  );
+
+                  return (
+                    item.href ? (
+                      <a
+                        key={item.label}
+                        href={item.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block rounded-xl border border-stone-100 px-3 py-2.5 transition-colors hover:border-primary hover:bg-primary/5"
+                      >
+                        {content}
+                      </a>
+                    ) : (
+                      <div key={item.label} className="flex items-start gap-3 rounded-xl px-3 py-2.5">
+                        {content}
+                      </div>
+                    )
                   );
                 })}
               </div>
