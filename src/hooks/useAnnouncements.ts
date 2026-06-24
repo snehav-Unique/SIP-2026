@@ -1,5 +1,15 @@
 import { useState, useEffect } from "react";
-import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+  serverTimestamp,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "../config/firebase";
 import { Announcement, defaultAnnouncements } from "../data/announcements";
 
@@ -62,9 +72,39 @@ const unsubscribe = onSnapshot(
     }
   }, []);
 
-  const deleteById = async (id: string | number) => id;
-  const updateById = async (id: string | number, updated: Announcement) => id;
-  const addAnnouncement = async (announcement: Omit<Announcement, "id">) => 0;
+  const deleteById = async (id: string | number) => {
+    try {
+      await deleteDoc(doc(db, "announcements", String(id)));
+    } catch (err) {
+      console.error("Error deleting announcement:", err);
+      setError("Failed to delete announcement");
+      throw err;
+    }
+  };
+
+  const updateById = async (id: string | number, updated: Announcement) => {
+    try {
+      await updateDoc(doc(db, "announcements", String(id)), { ...updated });
+    } catch (err) {
+      console.error("Error updating announcement:", err);
+      setError("Failed to update announcement");
+      throw err;
+    }
+  };
+
+  const addAnnouncement = async (announcement: Omit<Announcement, "id">) => {
+    try {
+      const announcementsCollection = collection(db, "announcements");
+      await addDoc(announcementsCollection, {
+        ...announcement,
+        createdAt: serverTimestamp(),
+      });
+    } catch (err) {
+      console.error("Error adding announcement:", err);
+      setError("Failed to add announcement");
+      throw err;
+    }
+  };
 
   const getLastUpdated = (): string | null => {
     return localStorage.getItem(LAST_UPDATED_KEY);
