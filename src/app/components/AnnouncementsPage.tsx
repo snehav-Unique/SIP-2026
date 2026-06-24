@@ -1,150 +1,81 @@
-import { useNavigate } from "react-router";
-import { Calendar, MapPin, Download, Clock, User, FileDown } from "lucide-react";
-import { useAnnouncements } from "../../hooks/useAnnouncements";
-import { Announcement } from "../../data/announcements";
-import { getAnnouncementTimeRange } from "../../utils/announcementTiming";
+import { useState, useEffect } from "react";
+import {
+  addDoc, collection, deleteDoc, doc,
+  onSnapshot, orderBy, query, serverTimestamp, updateDoc,
+} from "firebase/firestore";
+import { db } from "../../config/firebase";
+import { Announcement, defaultAnnouncements } from "../../data/announcements";
 
-export function AnnouncementsPage() {
-  const navigate = useNavigate();
-  const { announcements } = useAnnouncements();
+const LAST_UPDATED_KEY = "rvce_announcements_updated";
 
-  const now = new Date();
+export function useAnnouncements() {
+  const [announcements, setAnnouncements] = useState<Announcement[]>(defaultAnnouncements);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const upcoming = announcements
-    .filter((a) => {
-      const range = getAnnouncementTimeRange(a);
-      return range ? range.end >= now : false;
-    })
-    .sort((a, b) => {
-      const aStart = getAnnouncementTimeRange(a)?.start?.getTime() ?? 0;
-      const bStart = getAnnouncementTimeRange(b)?.start?.getTime() ?? 0;
-      return aStart - bStart;
-    });
-
-  const past = announcements
-    .filter((a) => {
-      const range = getAnnouncementTimeRange(a);
-      return range ? range.end < now : false;
-    })
-    .sort((a, b) => {
-      const aStart = getAnnouncementTimeRange(a)?.start?.getTime() ?? 0;
-      const bStart = getAnnouncementTimeRange(b)?.start?.getTime() ?? 0;
-      return bStart - aStart;
-    });
-
-  const handleMapNavigation = (announcement: Announcement) => {
-    const params = new URLSearchParams();
-    if (announcement.location) {
-      params.set("destination", announcement.location);
+  useEffect(() => {
+    setLoading(true);
+    try {
+      const q = query(collection(db, "announcements"), orderBy("createdAt", "desc"));
+      const unsubscribe = onSnapshot(q,
+        (snapshot) => {
+          if (snapshot.empty) {
+            setAnnouncements(defaultAnnouncements);
+          } else {
+            const firestoreData: Announcement[] = snapshot.docs.map((doc) => {
+              const d = doc.data();
+              return {
+                id: doc.id,
+                title: d.title || "",
+                date: d.date || "",
+                time: d.time || "",
+                location: d.location || "",
+                description: d.description || "",
+                author: d.author || "",
+                category: d.category || "Dean",
+                hasDocument: d.hasDocument || false,
+                documentUrl: d.documentUrl || d.fileUrl || "",
+                fileUrl: d.fileUrl || d.documentUrl || "",
+                documentName: d.documentName || "",
+                documentType: d.documentType || "",
+              };
+            });
+            setAnnouncements(firestoreData);
+          }
+          setLoading(false);
+          localStorage.setItem(LAST_UPDATED_KEY, new Date().toISOString());
+        },
+        (err) => {
+          console.error("Firestore error:", err);
+          setError("Failed to load announcements");
+          setAnnouncements(defaultAnnouncements);
+          setLoading(false);
+        }
+      );
+      return () => unsubscribe();
+    } catch (err) {
+      console.error("Listener setup error:", err);
+      setAnnouncements(defaultAnnouncements);
+      setLoading(false);
     }
-    params.set("event", String(announcement.id));
-    navigate(`/map?${params.toString()}`);
+  }, []);
+
+  const deleteById = async (id: string | number) => {
+    await deleteDoc(doc(db, "announcements", String(id)));
   };
 
-  const AnnouncementCard = ({ announcement }: { announcement: Announcement }) => (
-    <div className="rounded-2xl border border-stone-100 bg-white p-5 shadow-sm transition-shadow hover:shadow-md sm:p-6">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1">
-          <div className="mb-3 flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-              {announcement.category}
-            </span>
-            {announcement.hasDocument && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-500">
-                <FileDown size={13} />
-                {announcement.documentType?.includes("image") ? "Image attachment" : "PDF available"}
-              </span>
-            )}
-          </div>
-          <h2 className="text-xl font-bold text-stone-950 sm:text-2xl">{announcement.title}</h2>
-          <p className="mt-2 text-sm leading-7 text-stone-500">{announcement.description}</p>
-          <div className="mt-4 flex flex-wrap gap-4 text-sm text-stone-500">
-            <div className="flex items-center gap-2">
-              <User size={16} className="text-primary" />
-              <span>{announcement.author}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Calendar size={16} className="text-primary" />
-              <span>{new Date(announcement.date).toLocaleDateString()}</span>
-            </div>
-            {announcement.time && (
-              <div className="flex items-center gap-2">
-                <Clock size={16} className="text-primary" />
-                <span>{announcement.time}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+  const updateById = async (id: string | number, updated: Announcement) => {
+    await updateDoc(doc(db, "announcements", String(id)), { ...updated });
+  };
 
-      {announcement.location && (
-        <div className="mt-5 rounded-2xl bg-stone-50 p-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-2 text-stone-600">
-              <MapPin size={18} className="text-primary" />
-              <span className="font-medium">{announcement.location}</span>
-            </div>
-            <button
-              onClick={() => handleMapNavigation(announcement)}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-            >
-              <MapPin size={16} />
-              View on Map
-            </button>
-          </div>
-        </div>
-      )}
+  const addAnnouncement = async (announcement: Omit<Announcement, "id">) => {
+    await addDoc(collection(db, "announcements"), {
+      ...announcement,
+      createdAt: serverTimestamp(),
+    });
+  };
 
-      {announcement.hasDocument && announcement.fileUrl && (
-        <div className="mt-4">
-          <a
-            href={announcement.fileUrl}
-            target="_blank"
-            rel="noreferrer"
-            download={announcement.documentName || "announcement-attachment"}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-primary bg-white px-4 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-white"
-          >
-            <Download size={18} />
-            Download {announcement.documentType?.includes("image") ? "Image" : "PDF"}
-          </a>
-        </div>
-      )}
-    </div>
-  );
+  const getLastUpdated = (): string | null => localStorage.getItem(LAST_UPDATED_KEY);
 
-  return (
-    <div className="min-h-screen px-3 py-4 sm:px-5 lg:px-8">
-      <div className="mx-auto max-w-7xl space-y-4">
-        <div>
-          <h1 className="font-display text-2xl font-bold text-stone-950 sm:text-3xl">Announcements</h1>
-          <p className="mt-1 text-sm text-stone-500">Stay updated with the latest circulars, notices and downloadable files.</p>
-        </div>
-
-        <div className="grid gap-4">
-          {upcoming.length === 0 ? (
-            <div className="rounded-2xl border border-stone-100 bg-white p-6 text-center text-stone-500">
-              No upcoming announcements.
-            </div>
-          ) : (
-            upcoming.map((a) => <AnnouncementCard key={a.id} announcement={a} />)
-          )}
-        </div>
-
-        {past.length > 0 && (
-          <div className="pt-4">
-            <div className="mb-5 flex items-center gap-4">
-              <div className="h-px flex-1 bg-stone-200" />
-              <span className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-400">
-                Past Announcements
-              </span>
-              <div className="h-px flex-1 bg-stone-200" />
-            </div>
-            <div className="grid gap-4 opacity-80">
-              {past.map((a) => <AnnouncementCard key={a.id} announcement={a} />)}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  return { announcements, deleteById, updateById, addAnnouncement, getLastUpdated, loading, error };
 }
