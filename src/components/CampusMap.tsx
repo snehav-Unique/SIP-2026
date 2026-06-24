@@ -201,10 +201,6 @@ export default function CampusMap({
     return Array.from(byLocation.values());
   }, [announcements]);
 
-  const activeLocations = venueGroups.length > 0
-    ? venueGroups.map((group) => group.location)
-    : campusLocations;
-
   const suggestions = useMemo(() => {
     if (browseAll) {
       if (activeCategory === "All") return campusLocations;
@@ -295,15 +291,18 @@ export default function CampusMap({
   }, [selectedLocation]);
 
   const visibleGroups = useMemo(() => {
-    let groups = venueGroups.length > 0
-      ? [...venueGroups]
-      : campusLocations.map((location) => ({ location, announcements: [] }));
-
+    let locations = campusLocations;
     if (activeCategory !== "All") {
-      groups = groups.filter(g => g.location.category === activeCategory);
+      locations = locations.filter(loc => loc.category === activeCategory);
     }
     
-    return groups;
+    return locations.map(location => {
+      const group = venueGroups.find(g => g.location.name === location.name);
+      return {
+        location,
+        announcements: group ? group.announcements : []
+      };
+    });
   }, [venueGroups, activeCategory]);
 
   return (
