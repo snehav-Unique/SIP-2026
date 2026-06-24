@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, KeyboardEvent } from "react";
-import { CalendarDays, ChevronDown, Clock3, MapPinned, Search, X } from "lucide-react";
+import { CalendarDays, ChevronDown, Clock3, MapPinned, Search, X, Navigation } from "lucide-react";
 import {
   MapContainer,
   Marker,
@@ -16,26 +16,52 @@ import {
   type CampusLocation,
   resolveCampusLocation,
   normalizeLocationName,
+  type LocationCategory,
 } from "../data/campusLocations";
-import icon from "leaflet/dist/images/marker-icon.png";
-import iconShadow from "leaflet/dist/images/marker-shadow.png";
 import "leaflet/dist/leaflet.css";
 import { getAnnouncementTimeRange } from "../utils/announcementTiming";
 
-const defaultIcon = L.icon({ iconUrl: icon, shadowUrl: iconShadow });
-const highlightedIcon = L.icon({
-  iconUrl: icon,
-  shadowUrl: iconShadow,
-  iconSize: [30, 48],
-  iconAnchor: [15, 48],
-  popupAnchor: [1, -38],
-  shadowSize: [46, 46],
-});
+// --- Custom Leaflet Marker (No Image Assets Required) ---
+const createCustomIcon = (isActive: boolean, hasOngoingEvent: boolean) => {
+  const size = isActive ? 44 : 28;
+  const color = '#f97316'; // always orange
+  const animationClass = hasOngoingEvent ? 'animate-bounce' : '';
+  const htmlString = `
+    <div class="flex items-center justify-center ${animationClass}" style="color: ${color}; filter: drop-shadow(0 4px 3px rgb(0 0 0 / 0.07)) drop-shadow(0 2px 2px rgb(0 0 0 / 0.06));">
+      <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="currentColor" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/>
+        <circle cx="12" cy="10" r="3" fill="white"/>
+      </svg>
+    </div>
+  `;
+  
+  return L.divIcon({
+    className: "bg-transparent border-none",
+    html: htmlString,
+    iconSize: [size, size],
+    iconAnchor: [size/2, size],
+    popupAnchor: [0, -size + 10],
+  });
+};
 
-L.Marker.prototype.options.icon = defaultIcon;
+const CATEGORIES: LocationCategory[] = ["Academic", "Hostel", "Food", "Facilities", "Sports", "Landmarks", "Gates"];
 
 const MAP_CENTER: [number, number] = [12.9235, 77.5005];
 const MAP_ZOOM = 17;
+
+// --- Custom Hook for Debouncing ---
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [value, delay]);
+  return debouncedValue;
+}
 
 function MapController({
   selectedLocation,
@@ -62,6 +88,37 @@ function MapController({
   }, [map, selectedLocation]);
 
   return null;
+}
+
+function LocateControl() {
+  const map = useMap();
+  const [locating, setLocating] = useState(false);
+
+  const handleLocate = () => {
+    setLocating(true);
+    map.locate().on("locationfound", function (e) {
+      setLocating(false);
+      map.flyTo(e.latlng, 18.5);
+      L.circleMarker(e.latlng, { radius: 8, color: '#f97316', fillColor: '#f97316', fillOpacity: 0.5 }).addTo(map);
+    }).on("locationerror", function () {
+      setLocating(false);
+      alert("Could not access your location. Please check your browser permissions.");
+    });
+  };
+
+  return (
+    <div className="absolute bottom-4 right-4 z-[400]">
+      <button 
+        type="button"
+        onClick={handleLocate} 
+        disabled={locating}
+        aria-label="Locate me"
+        className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-lg border border-stone-200 text-stone-700 hover:text-primary transition-colors disabled:opacity-50"
+      >
+        <Navigation size={22} className={locating ? "animate-pulse text-primary" : ""} />
+      </button>
+    </div>
+  );
 }
 
 type CampusMapProps = {
@@ -108,12 +165,14 @@ export default function CampusMap({
   announcements = [],
 }: CampusMapProps) {
   const [search, setSearch] = useState(initialSearch);
-  // The location the map is currently panned to (set only on explicit selection)
+  const debouncedSearch = useDebounce(search, 200);
+  
   const [pinnedLocation, setPinnedLocation] = useState<CampusLocation | null>(null);
   const [activeLocationName, setActiveLocationName] = useState<string | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [browseAll, setBrowseAll] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [activeCategory, setActiveCategory] = useState<LocationCategory | "All">("All");
 
   const markerRefs = useRef<Record<string, LeafletMarker | null>>({});
   const inputRef = useRef<HTMLInputElement>(null);
@@ -146,11 +205,19 @@ export default function CampusMap({
     ? venueGroups.map((group) => group.location)
     : campusLocations;
 
- const suggestions = useMemo(() => {
-  if (browseAll) return campusLocations; // ← always show ALL locations
-  if (!search.trim()) return [];
-  return getDropdownMatches(search); // ← search across ALL locations too
-}, [search, browseAll]);
+  const suggestions = useMemo(() => {
+    if (browseAll) {
+      if (activeCategory === "All") return campusLocations;
+      return campusLocations.filter(loc => loc.category === activeCategory);
+    }
+    if (!debouncedSearch.trim()) return [];
+    
+    let matches = getDropdownMatches(debouncedSearch);
+    if (activeCategory !== "All") {
+       matches = matches.filter(loc => loc.category === activeCategory);
+    }
+    return matches;
+  }, [debouncedSearch, browseAll, activeCategory]);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
@@ -220,7 +287,6 @@ export default function CampusMap({
     [announcements, focusAnnouncementId],
   );
 
-  // Selected location: pinned (from dropdown) > focusAnnouncement location
   const selectedLocation =
     pinnedLocation ?? resolveCampusLocation(focusAnnouncement?.location);
 
@@ -229,12 +295,16 @@ export default function CampusMap({
   }, [selectedLocation]);
 
   const visibleGroups = useMemo(() => {
-    if (venueGroups.length > 0) {
-      return [...venueGroups];
-    }
+    let groups = venueGroups.length > 0
+      ? [...venueGroups]
+      : campusLocations.map((location) => ({ location, announcements: [] }));
 
-    return campusLocations.map((location) => ({ location, announcements: [] }));
-  }, [venueGroups]);
+    if (activeCategory !== "All") {
+      groups = groups.filter(g => g.location.category === activeCategory);
+    }
+    
+    return groups;
+  }, [venueGroups, activeCategory]);
 
   return (
     <div className="space-y-4">
@@ -246,6 +316,26 @@ export default function CampusMap({
         >
           Search campus locations
         </label>
+        
+        {/* Filter Chips */}
+        <div className="mb-4 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+           <button
+             onClick={() => setActiveCategory("All")}
+             className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${activeCategory === "All" ? "bg-primary text-white" : "bg-stone-100 text-stone-600 hover:bg-stone-200"}`}
+           >
+             All Places
+           </button>
+           {CATEGORIES.map((cat) => (
+             <button
+               key={cat}
+               onClick={() => setActiveCategory(cat)}
+               className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${activeCategory === cat ? "bg-primary text-white" : "bg-stone-100 text-stone-600 hover:bg-stone-200"}`}
+             >
+               {cat}
+             </button>
+           ))}
+        </div>
+
         <div className="relative">
           <Search
             size={18}
@@ -309,7 +399,7 @@ export default function CampusMap({
             >
               {browseAll && (
                 <p className="border-b border-stone-100 px-4 py-2 text-xs text-stone-400">
-                  All campus locations
+                  {activeCategory === "All" ? "All campus locations" : `${activeCategory} locations`}
                 </p>
               )}
               <div className="max-h-64 overflow-y-auto">
@@ -360,7 +450,7 @@ export default function CampusMap({
         </div>
 
         {/* Status line below input */}
-        {search && !pinnedLocation && suggestions.length === 0 ? (
+        {debouncedSearch && !pinnedLocation && suggestions.length === 0 ? (
           <p className="mt-2 text-xs text-stone-500">No matching location found.</p>
         ) : pinnedLocation ? (
           <p className="mt-2 text-xs text-stone-500">
@@ -375,7 +465,22 @@ export default function CampusMap({
       </div>
 
       {/* Map */}
-      <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm relative">
+        {/* Global Styles for Custom Popup */}
+        <style dangerouslySetInnerHTML={{__html: `
+          .leaflet-popup-content-wrapper {
+            border-radius: 0.75rem !important;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
+            padding: 0 !important;
+          }
+          .leaflet-popup-content {
+            margin: 0 !important;
+            width: auto !important;
+          }
+          .leaflet-popup-tip {
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1) !important;
+          }
+        `}} />
         <div className="h-[60vh] min-h-[420px] w-full sm:h-[65vh]">
           <MapContainer
             center={MAP_CENTER}
@@ -384,12 +489,14 @@ export default function CampusMap({
             zoomControl
             style={{ height: "100%", width: "100%" }}
           >
+            {/* Default OpenStreetMap Tile Layer for detailed labels */}
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               maxZoom={19}
             />
             <MapController selectedLocation={selectedLocation} />
+            <LocateControl />
             {visibleGroups.map((group) => {
               const isActive = activeLocationName === group.location.name;
               const isFocusedVenue =
@@ -401,7 +508,7 @@ export default function CampusMap({
                   key={group.location.name}
                   position={[group.location.lat, group.location.lng]}
                   ref={setMarkerRef(group.location.name)}
-                  icon={isActive || isFocusedVenue ? highlightedIcon : defaultIcon}
+                  icon={createCustomIcon(isActive, group.announcements.length > 0)}
                   eventHandlers={{
                     click: () => {
                       const loc = group.location;
@@ -416,33 +523,39 @@ export default function CampusMap({
                   }}
                 >
                   <Popup>
-                    <div className="min-w-[220px] space-y-2">
+                    <div className="min-w-[220px] p-4 space-y-3">
                       <div>
-                        <p className="font-semibold text-stone-900">
+                        <p className="font-semibold text-stone-900 text-base">
                           {group.location.name}
                         </p>
-                        <p className="text-xs font-medium text-primary">
-                          Spot demarcated
-                        </p>
-                        <p className="text-xs text-stone-500">
-                          {group.announcements.length > 0
-                            ? `${group.announcements.length} active venue event${group.announcements.length > 1 ? "s" : ""}`
-                            : "Campus location"}
-                        </p>
-                      </div>
-                      {group.announcements.map((announcement) => (
-                        <div
-                          key={announcement.id}
-                          className="rounded-lg border border-stone-200 bg-stone-50 p-2"
-                        >
-                          <p className="text-sm font-medium text-stone-900">
-                            {announcement.title}
-                          </p>
-                          <p className="mt-1 text-xs text-stone-500">
-                            {formatEventLabel(announcement)}
-                          </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="rounded-md bg-stone-100 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-stone-500 uppercase">
+                             {group.location.category}
+                          </span>
                         </div>
-                      ))}
+                        {group.announcements.length > 0 && (
+                           <p className="mt-2 text-xs font-medium text-primary">
+                             {group.announcements.length} active venue event{group.announcements.length > 1 ? "s" : ""}
+                           </p>
+                        )}
+                      </div>
+                      {group.announcements.length > 0 && (
+                        <div className="space-y-2 mt-3 pt-3 border-t border-stone-100">
+                          {group.announcements.map((announcement) => (
+                            <div
+                              key={announcement.id}
+                              className="rounded-lg border border-stone-200 bg-stone-50 p-2"
+                            >
+                              <p className="text-sm font-medium text-stone-900">
+                                {announcement.title}
+                              </p>
+                              <p className="mt-1 text-xs text-stone-500">
+                                {formatEventLabel(announcement)}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </Popup>
                 </Marker>
@@ -453,7 +566,7 @@ export default function CampusMap({
       </div>
 
       {/* Venue event cards — only when there are active announcements with locations */}
-      {venueGroups.length > 0 && (
+      {venueGroups.length > 0 && activeCategory === "All" && (
         <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
           <div className="mb-3 flex items-center gap-2 text-stone-900">
             <MapPinned size={18} className="text-primary" />
