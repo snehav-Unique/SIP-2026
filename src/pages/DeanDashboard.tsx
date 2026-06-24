@@ -19,6 +19,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import { renderTimeViewClock } from '@mui/x-date-pickers/timeViewRenderers';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 dayjs.extend(customParseFormat);
@@ -367,6 +368,11 @@ export function DeanDashboard() {
                       value={parseTime(form.time)}
                       onChange={(newValue) => setForm({ ...form, time: newValue ? newValue.format('HH:mm') : '' })}
                       disabled={busy}
+                      viewRenderers={{
+                        hours: renderTimeViewClock,
+                        minutes: renderTimeViewClock,
+                        seconds: renderTimeViewClock,
+                      }}
                       slotProps={{
                         textField: {
                           fullWidth: true,
@@ -491,6 +497,11 @@ export function DeanDashboard() {
                             value={parseTime(editForm.time)}
                             onChange={(newValue) => setEditForm({ ...editForm, time: newValue ? newValue.format('HH:mm') : '' })}
                             disabled={busy}
+                            viewRenderers={{
+                              hours: renderTimeViewClock,
+                              minutes: renderTimeViewClock,
+                              seconds: renderTimeViewClock,
+                            }}
                             slotProps={{
                               textField: {
                                 fullWidth: true,

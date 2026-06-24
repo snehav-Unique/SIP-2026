@@ -18,12 +18,8 @@ export function Navigation() {
   ];
 
   const handleLogoClick = () => {
+    navigate("/");
     clickCountRef.current += 1;
-    
-    // Navigate home on the first click
-    if (clickCountRef.current === 1) {
-      navigate("/");
-    }
 
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     if (clickCountRef.current === 5) {
