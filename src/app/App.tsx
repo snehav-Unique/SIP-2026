@@ -67,7 +67,7 @@ function StartupNotice() {
             onClick={dismiss}
             className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm font-semibold text-stone-700 transition-colors hover:border-primary hover:text-primary"
           >
-            Know it
+            Got it
           </button>
           <button
             type="button"
