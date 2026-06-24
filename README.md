@@ -9,7 +9,8 @@ This portal serves as the central hub for students to view real-time announcemen
 *   **Dynamic Student Dashboard**: Live metrics, upcoming events, and important dates automatically sync with real-time Firebase data.
 *   **Secret Dean Dashboard**: A hidden administrative route protected by Google Sign-In (with an emergency password fallback) for authorized personnel to create, edit, and delete announcements.
 *   **File Attachments**: Seamlessly upload PDFs, PNGs, and JPGs to announcements via Firebase Storage.
-*   **Interactive UI**: Features an intuitive Material UI TimePicker, dynamic chronological sorting, and sleek TailwindCSS glassmorphism styling.
+*   **Interactive UI**: Features an intuitive Material UI Clock view for Time Pickers, dynamic chronological sorting, and sleek TailwindCSS glassmorphism styling.
+*   **Intuitive Navigation**: Single-click the RVCE logo to instantly return home, with a hidden 5-click easter egg to access the Secret Dean Login.
 *   **Mobile-First Design**: The entire application is 100% responsive, utilizing Tailwind breakpoints to snap perfectly into mobile, tablet, and desktop views.
 
 ## 🛠 Tech Stack
