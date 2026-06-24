@@ -35,7 +35,7 @@ export function Navigation() {
   };
 
   return (
-    <nav className="fixed top-3 left-0 right-0 z-50 px-3 sm:top-4 sm:px-5">
+    <nav className="relative z-50 w-full">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 rounded-2xl border border-stone-200/50 bg-white/50 px-3 py-2 shadow-md shadow-stone-900/5 backdrop-blur-2xl sm:px-4 sm:py-2.5">
 
         {/* Logo + wordmark */}

@@ -85,35 +85,39 @@ function StartupNotice() {
 
 function AppContent() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#FAFAF9]">
+    <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-[#FAFAF9]">
       <DotGrid />
       <StartupNotice />
-      <Navigation />
-      <ClickSpark
-        sparkColor="#f97316"
-        sparkSize={10}
-        sparkRadius={18}
-        sparkCount={8}
-        duration={450}
-      >
-        <main className="relative z-10 min-h-screen pt-24 sm:pt-24">
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/schedule" element={<SchedulePage />} />
-            <Route path="/announcements" element={<AnnouncementsPage />} />
-            <Route path="/map" element={<MapPage />} />
-            <Route path="/sipannouncements/secretlogin" element={<SecretLoginPage />} />
-            <Route
-              path="/sipannouncements/admin"
-              element={
-                <ProtectedRoute>
-                  <DeanDashboard />
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-        </main>
-      </ClickSpark>
+      <div className="relative z-50 shrink-0 px-3 pb-3 pt-3 sm:px-5 sm:pb-4 sm:pt-4">
+        <Navigation />
+      </div>
+      <div id="main-scroll-container" className="relative z-10 flex-1 overflow-y-auto">
+        <ClickSpark
+          sparkColor="#f97316"
+          sparkSize={10}
+          sparkRadius={18}
+          sparkCount={8}
+          duration={450}
+        >
+          <main className="min-h-full pb-12">
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/schedule" element={<SchedulePage />} />
+              <Route path="/announcements" element={<AnnouncementsPage />} />
+              <Route path="/map" element={<MapPage />} />
+              <Route path="/sipannouncements/secretlogin" element={<SecretLoginPage />} />
+              <Route
+                path="/sipannouncements/admin"
+                element={
+                  <ProtectedRoute>
+                    <DeanDashboard />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </main>
+        </ClickSpark>
+      </div>
     </div>
   );
 }
