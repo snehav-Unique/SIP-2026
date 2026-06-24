@@ -146,13 +146,11 @@ export default function CampusMap({
     ? venueGroups.map((group) => group.location)
     : campusLocations;
 
-  // Dropdown suggestions: active notice locations when available, otherwise all locations.
-  const suggestions = useMemo(() => {
-    if (browseAll) return activeLocations;
-    return getDropdownMatches(search).filter((location) =>
-      activeLocations.some((activeLocation) => activeLocation.name === location.name),
-    );
-  }, [activeLocations, search, browseAll]);
+ const suggestions = useMemo(() => {
+  if (browseAll) return campusLocations; // ← always show ALL locations
+  if (!search.trim()) return [];
+  return getDropdownMatches(search); // ← search across ALL locations too
+}, [search, browseAll]);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);

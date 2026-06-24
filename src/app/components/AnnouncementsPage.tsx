@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useNavigate } from "react-router";
 import { CalendarDays, Clock3, ExternalLink, MapPin } from "lucide-react";
 import AnimatedContent from "../../components/AnimatedContent";
 import SplitText from "../../components/SplitText";
@@ -6,6 +7,7 @@ import { useAnnouncements } from "../../hooks/useAnnouncements";
 import { isAnnouncementCurrentOrUpcoming } from "../../utils/announcementTiming";
 
 export function AnnouncementsPage() {
+  const navigate = useNavigate();
   const { announcements, loading, error } = useAnnouncements();
 
   const visibleAnnouncements = useMemo(() => {
@@ -34,7 +36,7 @@ export function AnnouncementsPage() {
             <p className="mt-2 max-w-2xl text-sm leading-7 text-stone-500">
               Browse current and upcoming RVCE notices, office updates, and event alerts in one place.
             </p>
-          </div>
+          </div>  
         </section>
 
         {error && (
@@ -114,6 +116,17 @@ export function AnnouncementsPage() {
                       <span className="inline-flex items-center gap-2 rounded-full bg-stone-50 px-3 py-1.5">
                         <MapPin size={14} className="text-primary" />
                         {announcement.location}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const params = new URLSearchParams();
+                            params.set("destination", announcement.location!);
+                            navigate(`/map?${params.toString()}`);
+                          }}
+                          className="ml-1 text-primary text-xs font-semibold underline underline-offset-2 hover:text-orange-600 transition-colors"
+                        >
+                          Open in Map
+                        </button>
                       </span>
                     )}
                   </div>
