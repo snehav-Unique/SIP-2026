@@ -12,7 +12,7 @@
     "@emotion/styled": "^11.14.1",
     "@gsap/react": "^2.1.2",
     "@mui/icons-material": "7.3.5",
-    "@mui/material": "^7.3.5",
+    "@mui/material": "^7.3.11",
     "@mui/x-date-pickers": "^9.6.0",
     "@popperjs/core": "2.11.8",
     "@radix-ui/react-accordion": "1.2.3",

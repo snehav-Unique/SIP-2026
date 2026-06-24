@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
 import { CalendarDays, Clock3, Download, MapPin, ExternalLink } from "lucide-react";
+import AnimatedContent from "../components/AnimatedContent";
+import SplitText from "../components/SplitText";
 import { scheduleData, type CycleType } from "../data/scheduleData";
 import schedulePdf from "../../Sip-Shedule-2025-old.pdf";
 
@@ -135,10 +137,17 @@ export function SchedulePage() {
                   {selectedCycle}
                 </span>
               </div>
-              <h1 className="mt-4 text-3xl font-bold tracking-tight text-stone-950 sm:text-4xl lg:text-5xl">
-                Student induction schedule
-              </h1>
-             
+              <AnimatedContent distance={16} duration={0.6} threshold={0.05}>
+                <SplitText
+                  text="Student induction schedule"
+                  tag="h1"
+                  splitType="words"
+                  textAlign="left"
+                  delay={38}
+                  duration={0.6}
+                  className="mt-4 block text-3xl font-bold tracking-tight text-stone-950 sm:text-4xl lg:text-5xl"
+                />
+              </AnimatedContent>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[24rem]">
