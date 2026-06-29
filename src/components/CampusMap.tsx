@@ -298,7 +298,6 @@ export default function CampusMap({
     position: null,
     message: null,
   });
-  const [navigationRequestId, setNavigationRequestId] = useState(0);
   const [routeState, setRouteState] = useState<RouteState>({
     status: "idle",
     path: null,
@@ -421,9 +420,6 @@ export default function CampusMap({
     return matches;
   }, [debouncedSearch, browseAll, activeCategory]);
 
-  const isVenueLocation = (location: CampusLocation) =>
-    venueGroups.some((group) => group.location.name === location.name);
-
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
     setBrowseAll(false);
@@ -442,19 +438,6 @@ export default function CampusMap({
     setTimeout(() => {
       markerRefs.current[location.name]?.openPopup();
     }, 1900);
-  };
-
-  const handleNavigateToLocation = (location: CampusLocation) => {
-    setNavigationRequestId((current) => current + 1);
-    setRouteState({
-      status: "loading",
-      path: null,
-      distanceMeters: null,
-      durationSeconds: null,
-      message: null,
-    });
-    handleSelectSuggestion(location);
-    beginGeoWatch();
   };
 
   const handleClear = () => {
@@ -478,12 +461,7 @@ export default function CampusMap({
       setHighlightedIndex((i) => Math.max(i - 1, 0));
     } else if (e.key === "Enter" && highlightedIndex >= 0) {
       e.preventDefault();
-      const location = suggestions[highlightedIndex];
-      if (isVenueLocation(location)) {
-        handleNavigateToLocation(location);
-      } else {
-        handleSelectSuggestion(location);
-      }
+      handleSelectSuggestion(suggestions[highlightedIndex]);
     } else if (e.key === "Escape") {
       setDropdownOpen(false);
     }
@@ -562,7 +540,7 @@ export default function CampusMap({
           "Route calculation failed. Please check the plotted route graph for invalid points.",
       });
     }
-  }, [geoPosition, selectedLocation, navigationRequestId]);
+  }, [geoPosition, selectedLocation]);
 
   useEffect(() => {
     setActiveLocationName(selectedLocation?.name ?? null);
@@ -751,7 +729,9 @@ export default function CampusMap({
               )}
               <div className="max-h-64 overflow-y-auto">
                 {suggestions.map((location, index) => {
-                  const inVenueGroup = isVenueLocation(location);
+                  const inVenueGroup = venueGroups.some(
+                    (g) => g.location.name === location.name,
+                  );
                   return (
                     <button
                       key={location.name}
@@ -760,11 +740,7 @@ export default function CampusMap({
                       type="button"
                       onMouseDown={(e) => {
                         e.preventDefault();
-                        if (inVenueGroup) {
-                          handleNavigateToLocation(location);
-                        } else {
-                          handleSelectSuggestion(location);
-                        }
+                        handleSelectSuggestion(location);
                       }}
                       onMouseEnter={() => setHighlightedIndex(index)}
                       className={`flex w-full items-center justify-between px-4 py-2.5 text-left text-sm transition ${
@@ -1019,7 +995,7 @@ export default function CampusMap({
               <button
                 key={group.location.name}
                 type="button"
-                onClick={() => handleNavigateToLocation(group.location)}
+                onClick={() => handleSelectSuggestion(group.location)}
                 className={`rounded-xl border p-4 text-left transition ${
                   activeLocationName === group.location.name
                     ? "border-primary bg-primary/5"
