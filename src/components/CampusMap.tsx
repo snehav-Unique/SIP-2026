@@ -485,10 +485,14 @@ export default function CampusMap({
   zoom={MAP_ZOOM}
   scrollWheelZoom
   zoomControl
-  touchZoom
   // @ts-ignore
   rotate={true}
+  // @ts-ignore  
   touchRotate={true}
+  // @ts-ignore
+  rotateControl={{
+    closeOnZeroBearing: false
+  }}
   style={{ height: "100%", width: "100%" }}
 >
             {/* Default OpenStreetMap Tile Layer for detailed labels */}
