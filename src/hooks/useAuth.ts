@@ -24,7 +24,7 @@ export function useAuth() {
       const isAdminLS = localStorage.getItem("isAdmin") === "true";
       if (u) {
         const email = u.email || "";
-        if (ALLOWED_EMAILS.includes(email) || isAdminLS) {
+        if (ALLOWED_EMAILS.includes(email)) {
           setStatus("authorized");
           setMethod("google");
           localStorage.setItem("isAdmin", "true");

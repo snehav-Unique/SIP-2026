@@ -44,6 +44,24 @@ function parseTime(timeStr: string | undefined): Dayjs | null {
 
 const CATEGORIES = ["Dean", "Department", "Timetable", "Venue"] as const;
 
+function getFirebaseWriteErrorMessage(err: unknown, action: "create" | "update" | "delete") {
+  const code = typeof err === "object" && err !== null && "code" in err ? String((err as { code?: unknown }).code) : "";
+  const message =
+    typeof err === "object" && err !== null && "message" in err
+      ? String((err as { message?: unknown }).message)
+      : "";
+
+  if (code === "permission-denied" || message.toLowerCase().includes("permission")) {
+    return "Firebase rejected this write. Sign in with an allowed Google dean account and make sure Firestore rules allow that email to manage announcements.";
+  }
+
+  if (code === "unavailable") {
+    return "Firebase is temporarily unavailable. Please check your connection and try again.";
+  }
+
+  return `Failed to ${action} announcement${message ? `: ${message}` : ""}`;
+}
+
 function FileAttachmentRow({
   hasDocument,
   file,
@@ -128,7 +146,7 @@ function FileAttachmentRow({
 }
 
 export function DeanDashboard() {
-  const { logout, method } = useAuth();
+  const { logout, method, user } = useAuth();
   const { announcements } = useAnnouncements();
   const navigate = useNavigate();
   const [creating, setCreating] = useState(false);
@@ -167,6 +185,10 @@ export function DeanDashboard() {
   };
 
   const handleCreate = async () => {
+    if (!user || method !== "google") {
+      setError("Please sign in with an allowed Google dean account before creating Firebase announcements. Emergency password access cannot write to Firestore.");
+      return;
+    }
     if (!form.title.trim() || !form.date || !form.description.trim()) {
       setError("Title, date and description are required");
       return;
@@ -194,11 +216,11 @@ export function DeanDashboard() {
       }
 
       await setDoc(docRef, {
-        title: form.title,
-        description: form.description,
+        title: form.title.trim(),
+        description: form.description.trim(),
         date: form.date,
         time: form.time || "",
-        location: form.location || "",
+        location: form.location?.trim() || "",
         category: form.category,
         author: "Dean",
         hasDocument: form.hasDocument || false,
@@ -213,7 +235,7 @@ export function DeanDashboard() {
       setCreating(false);
     } catch (err) {
       console.error("Error creating announcement:", err);
-      setError("Failed to create announcement");
+      setError(getFirebaseWriteErrorMessage(err, "create"));
     } finally {
       setUploading(false);
       setIsSaving(false);
@@ -221,6 +243,10 @@ export function DeanDashboard() {
   };
 
   const handleDelete = async (id: string | number) => {
+    if (!user || method !== "google") {
+      setError("Please sign in with an allowed Google dean account before deleting Firebase announcements.");
+      return;
+    }
     if (!window.confirm("Delete this announcement?")) return;
     setIsSaving(true);
     setError(null);
@@ -228,7 +254,7 @@ export function DeanDashboard() {
       await deleteDoc(doc(db, "announcements", String(id)));
     } catch (err) {
       console.error("Error deleting:", err);
-      setError("Failed to delete announcement");
+      setError(getFirebaseWriteErrorMessage(err, "delete"));
     } finally {
       setIsSaving(false);
     }
@@ -242,6 +268,10 @@ export function DeanDashboard() {
 
   const handleSaveEdit = async () => {
     if (!editForm) return;
+    if (!user || method !== "google") {
+      setError("Please sign in with an allowed Google dean account before updating Firebase announcements.");
+      return;
+    }
     if (editForm.hasDocument && !selectedEditFile && !editForm.documentUrl && !editForm.fileUrl) {
       setError("Please select a file to attach for this notice");
       return;
@@ -254,11 +284,11 @@ export function DeanDashboard() {
       const existing = await getDoc(docRef);
       const hasCreatedAt = existing.exists() && existing.data()?.createdAt;
       const updatePayload: Record<string, unknown> = {
-        title: editForm.title,
-        description: editForm.description,
+        title: editForm.title.trim(),
+        description: editForm.description.trim(),
         date: editForm.date,
         time: editForm.time || "",
-        location: editForm.location || "",
+        location: editForm.location?.trim() || "",
         category: editForm.category,
         hasDocument: editForm.hasDocument || false,
         updatedAt: serverTimestamp(),
@@ -295,7 +325,7 @@ export function DeanDashboard() {
       setSelectedEditFile(null);
     } catch (err) {
       console.error("Error updating:", err);
-      setError("Failed to update announcement");
+      setError(getFirebaseWriteErrorMessage(err, "update"));
     } finally {
       setUploading(false);
       setIsSaving(false);
