@@ -480,12 +480,15 @@ export default function CampusMap({
           }
         `}} />
         <div className="h-[60vh] min-h-[420px] w-full sm:h-[65vh]">
-          <MapContainer
+<MapContainer
   center={MAP_CENTER}
   zoom={MAP_ZOOM}
   scrollWheelZoom
   zoomControl
   touchZoom
+  // @ts-ignore
+  rotate={true}
+  touchRotate={true}
   style={{ height: "100%", width: "100%" }}
 >
             {/* Default OpenStreetMap Tile Layer for detailed labels */}
