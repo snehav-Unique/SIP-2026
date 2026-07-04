@@ -22,12 +22,11 @@ import "leaflet/dist/leaflet.css";
 import { getAnnouncementTimeRange } from "../utils/announcementTiming";
 
 // --- Custom Leaflet Marker (No Image Assets Required) ---
-const createCustomIcon = (isActive: boolean, hasOngoingEvent: boolean) => {
+const createCustomIcon = (isActive: boolean) => {
   const size = isActive ? 44 : 28;
   const color = '#f97316'; // always orange
-  const animationClass = hasOngoingEvent ? 'animate-bounce' : '';
   const htmlString = `
-    <div class="flex items-center justify-center ${animationClass}" style="color: ${color}; filter: drop-shadow(0 4px 3px rgb(0 0 0 / 0.07)) drop-shadow(0 2px 2px rgb(0 0 0 / 0.06));">
+    <div class="flex items-center justify-center" style="color: ${color}; filter: drop-shadow(0 4px 3px rgb(0 0 0 / 0.07)) drop-shadow(0 2px 2px rgb(0 0 0 / 0.06));">
       <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="currentColor" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/>
         <circle cx="12" cy="10" r="3" fill="white"/>
@@ -507,7 +506,7 @@ export default function CampusMap({
                   key={group.location.name}
                   position={[group.location.lat, group.location.lng]}
                   ref={setMarkerRef(group.location.name)}
-                  icon={createCustomIcon(isActive, group.announcements.length > 0)}
+                  icon={createCustomIcon(isActive)}
                   eventHandlers={{
                     click: () => {
                       const loc = group.location;

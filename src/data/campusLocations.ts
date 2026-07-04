@@ -10,6 +10,7 @@ export type CampusLocation = {
 export const campusLocations: CampusLocation[] = [
   { name: "Main Gate", lat: 12.92461491, lng: 77.49906443, category: "Gates" },
   { name: "Civil Dept", lat: 12.92434254, lng: 77.49946234, category: "Academic" },
+  { name: "Mechanical Dept", lat: 12.924079043066945, lng: 77.50137134590467, category: "Academic" },
   { name: "CS Ground", lat: 12.92478366, lng: 77.500082, category: "Sports" },
   { name: "CS Dept", lat: 12.92432181, lng: 77.5002764, category: "Academic" },
   { name: "Health care", lat: 12.92456754, lng: 77.50076545, category: "Facilities" },
@@ -24,7 +25,7 @@ export const campusLocations: CampusLocation[] = [
   { name: "ETE Dept", lat: 12.92356807, lng: 77.50018812, category: "Academic" },
   { name: "Chem/Phy Dept", lat: 12.92334641, lng: 77.50003018, category: "Academic" },
   { name: "Maths Dept", lat: 12.92386568, lng: 77.50124312, category: "Academic" },
-  { name: "ISE Dept", lat: 12.92327662, lng: 77.50104307, category: "Academic" },
+  { name: "IS and Aerospace Dept", lat: 12.92327662, lng: 77.50104307, category: "Academic" },
   { name: "Library (RVU Entry)", lat: 12.92250284, lng: 77.50010389, category: "Facilities" },
   { name: "Library (RVCE Entry)", lat: 12.92250079, lng: 77.50039238, category: "Facilities" },
   { name: "Big MM", lat: 12.9227163, lng: 77.50068719, category: "Food" },
@@ -43,6 +44,8 @@ export const campusLocations: CampusLocation[] = [
   { name: "RVU Block", lat: 12.92341209, lng: 77.50133999, category: "Academic" },
   { name: "IEM Dept", lat: 12.92317464, lng: 77.49875059, category: "Academic" },
   { name: "Mech PG Dept", lat: 12.92351535, lng: 77.49834838, category: "Academic" },
+  { name: "Biotech Dept", lat: 12.92245276421396, lng: 77.49888046295641, category: "Academic" },
+  { name: "AI/ML/MCA Dept", lat: 12.922434630994228, lng: 77.49843767823518, category: "Academic" },
   { name: "Innovation Centre", lat: 12.92311717, lng: 77.49853159, category: "Academic" },
   { name: "Admin Block", lat: 12.92377396, lng: 77.49858423, category: "Academic" },
 ];
@@ -80,6 +83,36 @@ export function resolveCampusLocation(locationText?: string | null) {
       "cs seminar",
       "computer science",
       "cse dept",
+    ],
+    "IS and Aerospace Dept": [
+      "is department",
+      "is dept",
+      "ise dept",
+      "ise department",
+      "aerospace dept",
+      "aerospace department",
+      "is and aerospace",
+    ],
+    "Biotech Dept": [
+      "bt dept",
+      "bt department",
+      "biotech department",
+      "biotechnology dept",
+      "biotechnology department",
+    ],
+    "AI/ML/MCA Dept": [
+      "ai ml mca",
+      "ai/ml/mca",
+      "aiml mca",
+      "ai ml dept",
+      "mca dept",
+      "mca department",
+    ],
+    "Mechanical Dept": [
+      "mechanical department",
+      "mechanical dept",
+      "mech dept",
+      "mech department",
     ],
   };
 
