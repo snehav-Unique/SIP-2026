@@ -481,12 +481,13 @@ export default function CampusMap({
         `}} />
         <div className="h-[60vh] min-h-[420px] w-full sm:h-[65vh]">
           <MapContainer
-            center={MAP_CENTER}
-            zoom={MAP_ZOOM}
-            scrollWheelZoom
-            zoomControl
-            style={{ height: "100%", width: "100%" }}
-          >
+  center={MAP_CENTER}
+  zoom={MAP_ZOOM}
+  scrollWheelZoom
+  zoomControl
+  touchZoom
+  style={{ height: "100%", width: "100%" }}
+>
             {/* Default OpenStreetMap Tile Layer for detailed labels */}
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
