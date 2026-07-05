@@ -15,19 +15,19 @@ import { db } from "../config/firebase";
 import { Announcement } from "../data/announcements";
 import { campusLocations } from "../data/campusLocations";
 import { uploadAnnouncementFile } from "../utils/uploadfile";
-import dayjs, { Dayjs } from 'dayjs';
-import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import { renderTimeViewClock } from '@mui/x-date-pickers/timeViewRenderers';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import dayjs, { Dayjs } from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { TimePicker } from "@mui/x-date-pickers/TimePicker";
+import { renderTimeViewClock } from "@mui/x-date-pickers/timeViewRenderers";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
 
 dayjs.extend(customParseFormat);
 
 const muiTheme = createTheme({
   palette: {
-    primary: { main: '#F96500' },
+    primary: { main: "#F96500" },
   },
   typography: {
     fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
@@ -44,14 +44,23 @@ function parseTime(timeStr: string | undefined): Dayjs | null {
 
 const CATEGORIES = ["Dean", "Department", "Timetable", "Venue"] as const;
 
-function getFirebaseWriteErrorMessage(err: unknown, action: "create" | "update" | "delete") {
-  const code = typeof err === "object" && err !== null && "code" in err ? String((err as { code?: unknown }).code) : "";
+function getFirebaseWriteErrorMessage(
+  err: unknown,
+  action: "create" | "update" | "delete"
+) {
+  const code =
+    typeof err === "object" && err !== null && "code" in err
+      ? String((err as { code?: unknown }).code)
+      : "";
   const message =
     typeof err === "object" && err !== null && "message" in err
       ? String((err as { message?: unknown }).message)
       : "";
 
-  if (code === "permission-denied" || message.toLowerCase().includes("permission")) {
+  if (
+    code === "permission-denied" ||
+    message.toLowerCase().includes("permission")
+  ) {
     return "Firebase rejected this write. Sign in with an allowed Google dean account and make sure Firestore rules allow that email to manage announcements.";
   }
 
@@ -131,13 +140,16 @@ function FileAttachmentRow({
               onToggle(true);
             }
           }}
-          className={`block w-full cursor-pointer rounded-lg border border-dashed border-primary/40 bg-white px-4 py-2 text-sm text-stone-600 file:mr-4 file:rounded-full file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:bg-primary/5 ${disabled ? "cursor-not-allowed opacity-50" : ""}`}
+          className={`block w-full cursor-pointer rounded-lg border border-dashed border-primary/40 bg-white px-4 py-2 text-sm text-stone-600 file:mr-4 file:rounded-full file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:bg-primary/5 ${
+            disabled ? "cursor-not-allowed opacity-50" : ""
+          }`}
           disabled={disabled}
         />
         <div className="flex flex-wrap items-center gap-2">
           <Upload size={14} className="text-primary" />
           <p className="text-xs text-stone-400">
-            PDF, PNG, JPG or JPEG accepted. Choosing a file enables the attachment automatically.
+            PDF, PNG, JPG or JPEG accepted. Choosing a file enables the
+            attachment automatically.
           </p>
         </div>
       </div>
@@ -186,7 +198,9 @@ export function DeanDashboard() {
 
   const handleCreate = async () => {
     if (!user || method !== "google") {
-      setError("Please sign in with an allowed Google dean account before creating Firebase announcements. Emergency password access cannot write to Firestore.");
+      setError(
+        "Please sign in with an allowed Google dean account before creating Firebase announcements. Emergency password access cannot write to Firestore."
+      );
       return;
     }
     if (!form.title.trim() || !form.date || !form.description.trim()) {
@@ -194,12 +208,19 @@ export function DeanDashboard() {
       return;
     }
     if (form.hasDocument && !selectedFile) {
-      setError("Please select a file to attach before creating this notice");
+      setError(
+        "Please select a file to attach before creating this notice"
+      );
       return;
     }
 
+    // ✅ Capture file reference BEFORE any state changes to avoid stale closure
+    const fileToUpload = selectedFile;
+    const formSnapshot = { ...form };
+
     setIsSaving(true);
     setError(null);
+
     try {
       const docRef = doc(collection(db, "announcements"));
       let documentUrl = "";
@@ -207,23 +228,27 @@ export function DeanDashboard() {
       let documentName = "";
       let documentType = "";
 
-      if (form.hasDocument && selectedFile) {
+      if (formSnapshot.hasDocument && fileToUpload) {
         setUploading(true);
-        fileUrl = await uploadAnnouncementFile(selectedFile, docRef.id);
+        console.log("Uploading file to Cloudinary:", fileToUpload.name);
+        fileUrl = await uploadAnnouncementFile(fileToUpload, docRef.id);
         documentUrl = fileUrl;
-        documentName = selectedFile.name;
-        documentType = selectedFile.type || "application/octet-stream";
+        documentName = fileToUpload.name;
+        documentType = fileToUpload.type || "application/octet-stream";
+        console.log("Upload success. URL:", documentUrl);
       }
 
+      console.log("Saving to Firestore:", { documentUrl, fileUrl, hasDocument: formSnapshot.hasDocument });
+
       await setDoc(docRef, {
-        title: form.title.trim(),
-        description: form.description.trim(),
-        date: form.date,
-        time: form.time || "",
-        location: form.location?.trim() || "",
-        category: form.category,
+        title: formSnapshot.title.trim(),
+        description: formSnapshot.description.trim(),
+        date: formSnapshot.date,
+        time: formSnapshot.time || "",
+        location: formSnapshot.location?.trim() || "",
+        category: formSnapshot.category,
         author: "Dean",
-        hasDocument: form.hasDocument || false,
+        hasDocument: formSnapshot.hasDocument || false,
         documentUrl,
         fileUrl,
         documentName,
@@ -231,6 +256,7 @@ export function DeanDashboard() {
         createdAt: serverTimestamp(),
       });
 
+      console.log("Firestore write complete.");
       resetCreateForm();
       setCreating(false);
     } catch (err) {
@@ -244,7 +270,9 @@ export function DeanDashboard() {
 
   const handleDelete = async (id: string | number) => {
     if (!user || method !== "google") {
-      setError("Please sign in with an allowed Google dean account before deleting Firebase announcements.");
+      setError(
+        "Please sign in with an allowed Google dean account before deleting Firebase announcements."
+      );
       return;
     }
     if (!window.confirm("Delete this announcement?")) return;
@@ -269,48 +297,67 @@ export function DeanDashboard() {
   const handleSaveEdit = async () => {
     if (!editForm) return;
     if (!user || method !== "google") {
-      setError("Please sign in with an allowed Google dean account before updating Firebase announcements.");
+      setError(
+        "Please sign in with an allowed Google dean account before updating Firebase announcements."
+      );
       return;
     }
-    if (editForm.hasDocument && !selectedEditFile && !editForm.documentUrl && !editForm.fileUrl) {
+    if (
+      editForm.hasDocument &&
+      !selectedEditFile &&
+      !editForm.documentUrl &&
+      !editForm.fileUrl
+    ) {
       setError("Please select a file to attach for this notice");
       return;
     }
 
+    // ✅ Capture both file and form state BEFORE any state changes
+    const fileToUpload = selectedEditFile;
+    const editSnapshot = { ...editForm };
+
     setIsSaving(true);
     setError(null);
+
     try {
-      const docRef = doc(db, "announcements", String(editForm.id));
+      const docRef = doc(db, "announcements", String(editSnapshot.id));
       const existing = await getDoc(docRef);
       const hasCreatedAt = existing.exists() && existing.data()?.createdAt;
+
       const updatePayload: Record<string, unknown> = {
-        title: editForm.title.trim(),
-        description: editForm.description.trim(),
-        date: editForm.date,
-        time: editForm.time || "",
-        location: editForm.location?.trim() || "",
-        category: editForm.category,
-        hasDocument: editForm.hasDocument || false,
+        title: editSnapshot.title.trim(),
+        description: editSnapshot.description.trim(),
+        date: editSnapshot.date,
+        time: editSnapshot.time || "",
+        location: editSnapshot.location?.trim() || "",
+        category: editSnapshot.category,
+        hasDocument: editSnapshot.hasDocument || false,
         updatedAt: serverTimestamp(),
         ...(!hasCreatedAt ? { createdAt: serverTimestamp() } : {}),
       };
 
-      if (editForm.hasDocument) {
-        if (selectedEditFile) {
+      if (editSnapshot.hasDocument) {
+        if (fileToUpload) {
           setUploading(true);
-          const fileUrl = await uploadAnnouncementFile(
-            selectedEditFile,
-            String(editForm.title || editForm.id),
+          console.log("Uploading edit file to Cloudinary:", fileToUpload.name);
+          const uploadedUrl = await uploadAnnouncementFile(
+            fileToUpload,
+            String(editSnapshot.title || editSnapshot.id)
           );
-          updatePayload.documentUrl = fileUrl;
-          updatePayload.fileUrl = fileUrl;
-          updatePayload.documentName = selectedEditFile.name;
-          updatePayload.documentType = selectedEditFile.type || "application/octet-stream";
+          console.log("Edit upload success. URL:", uploadedUrl);
+          updatePayload.documentUrl = uploadedUrl;
+          updatePayload.fileUrl = uploadedUrl;
+          updatePayload.documentName = fileToUpload.name;
+          updatePayload.documentType =
+            fileToUpload.type || "application/octet-stream";
         } else {
-          updatePayload.documentUrl = editForm.documentUrl || editForm.fileUrl || "";
-          updatePayload.fileUrl = editForm.fileUrl || editForm.documentUrl || "";
-          updatePayload.documentName = editForm.documentName || "";
-          updatePayload.documentType = editForm.documentType || "";
+          // Keep existing URLs
+          updatePayload.documentUrl =
+            editSnapshot.documentUrl || editSnapshot.fileUrl || "";
+          updatePayload.fileUrl =
+            editSnapshot.fileUrl || editSnapshot.documentUrl || "";
+          updatePayload.documentName = editSnapshot.documentName || "";
+          updatePayload.documentType = editSnapshot.documentType || "";
         }
       } else {
         updatePayload.documentUrl = "";
@@ -319,7 +366,14 @@ export function DeanDashboard() {
         updatePayload.documentType = "";
       }
 
+      console.log("Saving edit to Firestore:", {
+        documentUrl: updatePayload.documentUrl,
+        fileUrl: updatePayload.fileUrl,
+      });
+
       await setDoc(docRef, updatePayload, { merge: true });
+      console.log("Firestore edit write complete.");
+
       setEditingId(null);
       setEditForm(null);
       setSelectedEditFile(null);
@@ -337,7 +391,9 @@ export function DeanDashboard() {
       <div className="mx-auto max-w-6xl">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="font-display text-3xl font-bold text-stone-950">Dean Dashboard</h1>
+            <h1 className="font-display text-3xl font-bold text-stone-950">
+              Dean Dashboard
+            </h1>
             <div className="mt-2 h-1 w-16 bg-primary" />
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -375,7 +431,9 @@ export function DeanDashboard() {
 
         {creating && (
           <div className="mb-6 rounded-2xl border border-stone-100 bg-white p-5 shadow-sm sm:p-6">
-            <h2 className="mb-4 text-xl font-bold text-stone-950">Create Announcement</h2>
+            <h2 className="mb-4 text-xl font-bold text-stone-950">
+              Create Announcement
+            </h2>
             <div className="space-y-3">
               <input
                 placeholder="Title *"
@@ -384,57 +442,70 @@ export function DeanDashboard() {
                 className="w-full rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
                 disabled={busy}
               />
-<div className="grid gap-3 sm:grid-cols-2 sm:items-end">
-  <div className="flex flex-col gap-1">
-    <label className="text-xs font-semibold text-stone-600">
-      Date <span className="text-red-500">*</span>
-    </label>
-    <input
-      type="date"
-      value={form.date}
-      onChange={(e) => setForm({ ...form, date: e.target.value })}
-      className={`rounded-lg border p-3 outline-none transition focus:border-primary ${
-        error && !form.date ? "border-red-400 bg-red-50" : "border-stone-200"
-      }`}
-      disabled={busy}
-      required
-    />
-    {error && !form.date && (
-      <p className="text-xs text-red-500">Date is required</p>
-    )}
-  </div>
-  <ThemeProvider theme={muiTheme}>
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <TimePicker
-        label="Time"
-        value={parseTime(form.time)}
-        onChange={(newValue) => setForm({ ...form, time: newValue ? newValue.format('HH:mm') : '' })}
-        disabled={busy}
-        viewRenderers={{
-          hours: renderTimeViewClock,
-          minutes: renderTimeViewClock,
-          seconds: renderTimeViewClock,
-        }}
-        slotProps={{
-          textField: {
-            fullWidth: true,
-            sx: {
-              '& .MuiOutlinedInput-root': {
-                borderRadius: '0.5rem',
-                '& fieldset': { borderColor: '#E5E7EB' },
-                '&:hover fieldset': { borderColor: '#F96500' },
-                '&.Mui-focused fieldset': { borderColor: '#F96500' },
-              },
-            },
-          },
-        }}
-      />
-    </LocalizationProvider>
-  </ThemeProvider>
-</div>
+              <div className="grid gap-3 sm:grid-cols-2 sm:items-end">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-stone-600">
+                    Date <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={form.date}
+                    onChange={(e) =>
+                      setForm({ ...form, date: e.target.value })
+                    }
+                    className={`rounded-lg border p-3 outline-none transition focus:border-primary ${
+                      error && !form.date
+                        ? "border-red-400 bg-red-50"
+                        : "border-stone-200"
+                    }`}
+                    disabled={busy}
+                    required
+                  />
+                  {error && !form.date && (
+                    <p className="text-xs text-red-500">Date is required</p>
+                  )}
+                </div>
+                <ThemeProvider theme={muiTheme}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <TimePicker
+                      label="Time"
+                      value={parseTime(form.time)}
+                      onChange={(newValue) =>
+                        setForm({
+                          ...form,
+                          time: newValue ? newValue.format("HH:mm") : "",
+                        })
+                      }
+                      disabled={busy}
+                      viewRenderers={{
+                        hours: renderTimeViewClock,
+                        minutes: renderTimeViewClock,
+                        seconds: renderTimeViewClock,
+                      }}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          sx: {
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: "0.5rem",
+                              "& fieldset": { borderColor: "#E5E7EB" },
+                              "&:hover fieldset": { borderColor: "#F96500" },
+                              "&.Mui-focused fieldset": {
+                                borderColor: "#F96500",
+                              },
+                            },
+                          },
+                        },
+                      }}
+                    />
+                  </LocalizationProvider>
+                </ThemeProvider>
+              </div>
               <select
                 value={form.location || ""}
-                onChange={(e) => setForm({ ...form, location: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, location: e.target.value })
+                }
                 className="w-full rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
                 disabled={busy}
               >
@@ -450,7 +521,9 @@ export function DeanDashboard() {
               <textarea
                 placeholder="Description *"
                 value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, description: e.target.value })
+                }
                 className="w-full resize-none rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
                 rows={4}
                 disabled={busy}
@@ -458,7 +531,9 @@ export function DeanDashboard() {
               <div className="flex flex-wrap items-center gap-4">
                 <select
                   value={form.category}
-                  onChange={(e) => setForm({ ...form, category: e.target.value as any })}
+                  onChange={(e) =>
+                    setForm({ ...form, category: e.target.value as any })
+                  }
                   className="rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
                   disabled={busy}
                 >
@@ -495,7 +570,11 @@ export function DeanDashboard() {
                   className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 font-semibold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
                 >
                   <Check size={16} />
-                  {uploading ? "Uploading..." : isSaving ? "Creating..." : "Create"}
+                  {uploading
+                    ? "Uploading..."
+                    : isSaving
+                    ? "Creating..."
+                    : "Create"}
                 </button>
                 <button
                   onClick={() => {
@@ -523,12 +602,19 @@ export function DeanDashboard() {
           ) : (
             announcements.map((a) =>
               editingId === String(a.id) && editForm ? (
-                <div key={a.id} className="rounded-2xl border border-primary/30 bg-white p-5 shadow-sm sm:p-6">
-                  <h3 className="mb-3 font-bold text-stone-950">Editing: {a.title}</h3>
+                <div
+                  key={a.id}
+                  className="rounded-2xl border border-primary/30 bg-white p-5 shadow-sm sm:p-6"
+                >
+                  <h3 className="mb-3 font-bold text-stone-950">
+                    Editing: {a.title}
+                  </h3>
                   <div className="space-y-3">
                     <input
                       value={editForm.title}
-                      onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, title: e.target.value })
+                      }
                       className="w-full rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
                       disabled={busy}
                     />
@@ -536,7 +622,9 @@ export function DeanDashboard() {
                       <input
                         type="date"
                         value={editForm.date}
-                        onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, date: e.target.value })
+                        }
                         className="rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
                         disabled={busy}
                       />
@@ -545,7 +633,14 @@ export function DeanDashboard() {
                           <TimePicker
                             label="Time"
                             value={parseTime(editForm.time)}
-                            onChange={(newValue) => setEditForm({ ...editForm, time: newValue ? newValue.format('HH:mm') : '' })}
+                            onChange={(newValue) =>
+                              setEditForm({
+                                ...editForm,
+                                time: newValue
+                                  ? newValue.format("HH:mm")
+                                  : "",
+                              })
+                            }
                             disabled={busy}
                             viewRenderers={{
                               hours: renderTimeViewClock,
@@ -556,11 +651,15 @@ export function DeanDashboard() {
                               textField: {
                                 fullWidth: true,
                                 sx: {
-                                  '& .MuiOutlinedInput-root': {
-                                    borderRadius: '0.5rem',
-                                    '& fieldset': { borderColor: '#E5E7EB' },
-                                    '&:hover fieldset': { borderColor: '#F96500' },
-                                    '&.Mui-focused fieldset': { borderColor: '#F96500' },
+                                  "& .MuiOutlinedInput-root": {
+                                    borderRadius: "0.5rem",
+                                    "& fieldset": { borderColor: "#E5E7EB" },
+                                    "&:hover fieldset": {
+                                      borderColor: "#F96500",
+                                    },
+                                    "&.Mui-focused fieldset": {
+                                      borderColor: "#F96500",
+                                    },
                                   },
                                 },
                               },
@@ -571,7 +670,9 @@ export function DeanDashboard() {
                     </div>
                     <select
                       value={editForm.location || ""}
-                      onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, location: e.target.value })
+                      }
                       className="w-full rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
                       disabled={busy}
                     >
@@ -586,7 +687,12 @@ export function DeanDashboard() {
                     </select>
                     <textarea
                       value={editForm.description}
-                      onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                      onChange={(e) =>
+                        setEditForm({
+                          ...editForm,
+                          description: e.target.value,
+                        })
+                      }
                       className="w-full resize-none rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
                       rows={4}
                       disabled={busy}
@@ -594,7 +700,12 @@ export function DeanDashboard() {
                     <div className="flex flex-wrap items-center gap-4">
                       <select
                         value={editForm.category}
-                        onChange={(e) => setEditForm({ ...editForm, category: e.target.value as any })}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            category: e.target.value as any,
+                          })
+                        }
                         className="rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
                         disabled={busy}
                       >
@@ -632,7 +743,11 @@ export function DeanDashboard() {
                         className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 font-semibold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
                       >
                         <Check size={16} />
-                        {uploading ? "Uploading..." : isSaving ? "Saving..." : "Save"}
+                        {uploading
+                          ? "Uploading..."
+                          : isSaving
+                          ? "Saving..."
+                          : "Save"}
                       </button>
                       <button
                         onClick={() => {
@@ -649,7 +764,10 @@ export function DeanDashboard() {
                   </div>
                 </div>
               ) : (
-                <div key={a.id} className="flex items-start justify-between gap-4 rounded-2xl border border-stone-100 bg-white p-5 shadow-sm">
+                <div
+                  key={a.id}
+                  className="flex items-start justify-between gap-4 rounded-2xl border border-stone-100 bg-white p-5 shadow-sm"
+                >
                   <div className="flex-1">
                     <div className="mb-2 flex flex-wrap items-center gap-2">
                       <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
@@ -662,14 +780,29 @@ export function DeanDashboard() {
                         </span>
                       )}
                     </div>
-                    <h3 className="text-lg font-bold text-stone-950">{a.title}</h3>
-                    <p className="mt-1 text-sm text-stone-500">{a.description}</p>
+                    <h3 className="text-lg font-bold text-stone-950">
+                      {a.title}
+                    </h3>
+                    <p className="mt-1 text-sm text-stone-500">
+                      {a.description}
+                    </p>
                     <div className="mt-2 flex flex-wrap gap-3 text-xs text-stone-400">
                       <span>📅 {new Date(a.date).toLocaleDateString()}</span>
                       {a.time && <span>⏰ {a.time}</span>}
                       {a.location && <span>📍 {a.location}</span>}
                       {a.documentName && <span>File: {a.documentName}</span>}
                     </div>
+                    {/* ✅ Preview link in dashboard so dean can verify the URL saved correctly */}
+                    {a.hasDocument && (a.documentUrl || a.fileUrl) && (
+                      <a
+                        href={a.documentUrl || a.fileUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-primary underline underline-offset-2 hover:text-orange-600"
+                      >
+                        Preview saved file ↗
+                      </a>
+                    )}
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -688,7 +821,7 @@ export function DeanDashboard() {
                     </button>
                   </div>
                 </div>
-              ),
+              )
             )
           )}
         </div>
