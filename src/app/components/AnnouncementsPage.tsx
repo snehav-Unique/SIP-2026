@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router";
 import { CalendarDays, Clock3, ExternalLink, MapPin } from "lucide-react";
 import AnimatedContent from "../../components/AnimatedContent";
-import SplitText from "../../components/SplitText";
 import { useAnnouncements } from "../../hooks/useAnnouncements";
 import { isAnnouncementCurrentOrUpcoming } from "../../utils/announcementTiming";
 
@@ -71,15 +70,11 @@ export function AnnouncementsPage() {
                         </span>
                       </div>
                       <div>
-                        <SplitText
-                          text={announcement.title}
-                          tag="h2"
-                          splitType="words"
-                          textAlign="left"
-                          delay={38}
-                          duration={0.6}
-                          className="block text-xl font-bold text-stone-950"
-                        />
+
+
+<h2 className="text-xl font-bold text-stone-950">
+  {announcement.title}
+</h2>
                         <AnimatedContent distance={10} duration={0.5} threshold={0.05}>
                           <p className="mt-2 max-w-3xl text-sm leading-7 text-stone-500">
                             {announcement.description}
