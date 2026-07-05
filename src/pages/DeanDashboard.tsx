@@ -384,43 +384,54 @@ export function DeanDashboard() {
                 className="w-full rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
                 disabled={busy}
               />
-              <div className="grid gap-3 sm:grid-cols-2">
-                <input
-                  type="date"
-                  value={form.date}
-                  onChange={(e) => setForm({ ...form, date: e.target.value })}
-                  className="rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
-                  disabled={busy}
-                />
-                <ThemeProvider theme={muiTheme}>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <TimePicker
-                      label="Time"
-                      value={parseTime(form.time)}
-                      onChange={(newValue) => setForm({ ...form, time: newValue ? newValue.format('HH:mm') : '' })}
-                      disabled={busy}
-                      viewRenderers={{
-                        hours: renderTimeViewClock,
-                        minutes: renderTimeViewClock,
-                        seconds: renderTimeViewClock,
-                      }}
-                      slotProps={{
-                        textField: {
-                          fullWidth: true,
-                          sx: {
-                            '& .MuiOutlinedInput-root': {
-                              borderRadius: '0.5rem',
-                              '& fieldset': { borderColor: '#E5E7EB' },
-                              '&:hover fieldset': { borderColor: '#F96500' },
-                              '&.Mui-focused fieldset': { borderColor: '#F96500' },
-                            },
-                          },
-                        },
-                      }}
-                    />
-                  </LocalizationProvider>
-                </ThemeProvider>
-              </div>
+<div className="grid gap-3 sm:grid-cols-2 sm:items-end">
+  <div className="flex flex-col gap-1">
+    <label className="text-xs font-semibold text-stone-600">
+      Date <span className="text-red-500">*</span>
+    </label>
+    <input
+      type="date"
+      value={form.date}
+      onChange={(e) => setForm({ ...form, date: e.target.value })}
+      className={`rounded-lg border p-3 outline-none transition focus:border-primary ${
+        error && !form.date ? "border-red-400 bg-red-50" : "border-stone-200"
+      }`}
+      disabled={busy}
+      required
+    />
+    {error && !form.date && (
+      <p className="text-xs text-red-500">Date is required</p>
+    )}
+  </div>
+  <ThemeProvider theme={muiTheme}>
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <TimePicker
+        label="Time"
+        value={parseTime(form.time)}
+        onChange={(newValue) => setForm({ ...form, time: newValue ? newValue.format('HH:mm') : '' })}
+        disabled={busy}
+        viewRenderers={{
+          hours: renderTimeViewClock,
+          minutes: renderTimeViewClock,
+          seconds: renderTimeViewClock,
+        }}
+        slotProps={{
+          textField: {
+            fullWidth: true,
+            sx: {
+              '& .MuiOutlinedInput-root': {
+                borderRadius: '0.5rem',
+                '& fieldset': { borderColor: '#E5E7EB' },
+                '&:hover fieldset': { borderColor: '#F96500' },
+                '&.Mui-focused fieldset': { borderColor: '#F96500' },
+              },
+            },
+          },
+        }}
+      />
+    </LocalizationProvider>
+  </ThemeProvider>
+</div>
               <select
                 value={form.location || ""}
                 onChange={(e) => setForm({ ...form, location: e.target.value })}
