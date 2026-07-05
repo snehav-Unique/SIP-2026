@@ -1,29 +1,23 @@
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from "../config/firebase";
-
 /**
- * Uploads a file to Firebase Storage and returns its public download URL.
- * 
- * @param file The file to upload
- * @param namePrefix A string to prefix the file name with (usually the announcement title or ID)
- * @returns The download URL of the uploaded file
+ * Uploads a file to Cloudinary and returns its public download URL.
  */
-export async function uploadAnnouncementFile(file: File, namePrefix: string): Promise<string> {
-  if (!storage.app.options.storageBucket) {
-    throw new Error("Firebase Storage bucket is not configured.");
-  }
+export async function uploadAnnouncementFile(
+  file: File,
+  _id: string
+): Promise<string> {
+  const CLOUD_NAME = "wdojfhlz";
+  const UPLOAD_PRESET = "kg7qybrg";
 
-  // Sanitize prefix to be URL and filesystem safe
-  const safePrefix = namePrefix.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
-  const fileExtension = file.name.split(".").pop() || "bin";
-  const fileName = `${safePrefix}-${Date.now()}.${fileExtension}`;
-  
-  // Create a reference to 'announcement-attachments/{fileName}'
-  const storageRef = ref(storage, `announcement-attachments/${fileName}`);
-  
-  // Upload the file
-  await uploadBytes(storageRef, file);
-  
-  // Get and return the download URL
-  return await getDownloadURL(storageRef);
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", UPLOAD_PRESET);
+
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`,
+    { method: "POST", body: formData }
+  );
+
+  if (!res.ok) throw new Error("Upload failed");
+  const data = await res.json();
+  return data.secure_url;
 }
