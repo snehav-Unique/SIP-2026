@@ -15,69 +15,44 @@ import ClickSpark from "./components/ClickSpark";
 const RVCE_WEBSITE = "https://rvce.edu.in/";
 
 function StartupNotice() {
-  const [open, setOpen] = useState(true);
-
-  const dismiss = () => {
-    setOpen(false);
-  };
-
-  const goToWebsite = () => {
-    window.open(RVCE_WEBSITE, "_blank", "noopener,noreferrer");
-    setOpen(false);
-  };
-
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-stone-950/75 px-4 backdrop-blur-sm">
-      <div className="relative w-full max-w-lg overflow-hidden rounded-[2rem] border border-stone-200/20 bg-white p-5 shadow-2xl sm:p-6">
-        <button
-          type="button"
-          onClick={dismiss}
-          className="absolute right-4 top-4 rounded-full p-2 text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-900"
-          aria-label="Close notice"
-        >
-          <X size={18} />
-        </button>
-
-        <div className="pr-10">
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary">
-            Temporary website
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-stone-950/90 px-4 backdrop-blur-[45px]">
+      <div className="relative w-full max-w-md overflow-hidden rounded-[2rem] border border-stone-200/20 bg-white p-6 shadow-2xl sm:p-8">
+        
+        {/* Header */}
+        <div className="text-center mb-6">
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary mb-1">
+            Coming Soon
           </p>
-          <h2 className="mt-2 text-2xl font-bold text-stone-950">
-            Welcome to the RVCE portal
+          <h2 className="text-2xl font-bold text-stone-950">
+            RVCE Student Induction Portal
           </h2>
-          <p className="mt-3 text-sm leading-7 text-stone-600">
-            This is just a temporary website, visit{" "}
-            <a
-              href={RVCE_WEBSITE}
-              target="_blank"
-              rel="noreferrer"
-              className="font-semibold text-primary underline decoration-primary/30 underline-offset-4 transition-colors hover:text-orange-600"
-            >
-              the official RVCE website
-            </a>{" "}
-            for the official website.
+          <p className="mt-2 text-sm text-stone-500 leading-6">
+            This portal will be live during the Student Induction Programme. 
+            Scan the QR below to visit the official RVCE website.
           </p>
         </div>
 
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-          <button
-            type="button"
-            onClick={dismiss}
-            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm font-semibold text-stone-700 transition-colors hover:border-primary hover:text-primary"
-          >
-            Got it
-          </button>
-          <button
-            type="button"
-            onClick={goToWebsite}
-            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-          >
-            Go to website
-            <ExternalLink size={15} />
-          </button>
+        {/* Divider */}
+        <div className="h-px bg-stone-100 mb-6" />
+
+        {/* QR Code */}
+        <div className="flex flex-col items-center gap-3">
+          <p className="text-xs font-semibold uppercase tracking-widest text-stone-400">
+            Scan to visit RVCE
+          </p>
+          <div className="rounded-2xl border border-stone-100 bg-white p-3 shadow-sm">
+            <img
+              src="/qr_code_sip.png"
+              alt="RVCE QR Code"
+              className="w-48 h-48 object-contain"
+            />
+          </div>
+          <p className="text-xs text-stone-400 text-center">
+            RV College of Engineering · Mysore Road, Bengaluru - 560059
+          </p>
         </div>
+
       </div>
     </div>
   );
