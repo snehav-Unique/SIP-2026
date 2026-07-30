@@ -12,7 +12,7 @@ import { ProtectedRoute } from "../components/ProtectedRoute";
 import { DotGrid } from "./components/DotGrid";
 import ClickSpark from "./components/ClickSpark";
 
-const RVCE_WEBSITE = "https://rvce.edu.in/";
+const RVCE_WEBSITE = "https://linktr.ee/RVCE?utm_source=qr_code";
 
 function StartupNotice() {
   return (
@@ -38,20 +38,19 @@ function StartupNotice() {
 
         {/* QR Code */}
         <div className="flex flex-col items-center gap-3">
-          <p className="text-xs font-semibold uppercase tracking-widest text-stone-400">
-            Scan to visit RVCE
-          </p>
-          <div className="rounded-2xl border border-stone-100 bg-white p-3 shadow-sm">
-            <img
-              src="/qr_code_sip.png"
-              alt="RVCE QR Code"
-              className="w-48 h-48 object-contain"
-            />
-          </div>
-          <p className="text-xs text-stone-400 text-center">
-            RV College of Engineering · Mysore Road, Bengaluru - 560059
-          </p>
-        </div>
+  
+    <a href={RVCE_WEBSITE}
+    target="_blank"
+    rel="noreferrer"
+    className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-transform hover:-translate-y-0.5"
+  >
+    <ExternalLink size={15} />
+    Visit RVCE Website
+  </a>
+  <p className="text-xs text-stone-400 text-center">
+    RV College of Engineering · Mysore Road, Bengaluru - 560059
+  </p>
+</div>
 
       </div>
     </div>
