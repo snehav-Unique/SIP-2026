@@ -29,7 +29,6 @@ function StartupNotice() {
           </h2>
           <p className="mt-2 text-sm text-stone-500 leading-6">
             This portal will be live during the Student Induction Programme. 
-            Scan the QR below to visit the official RVCE website.
           </p>
         </div>
 
