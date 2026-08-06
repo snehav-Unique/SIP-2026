@@ -18,7 +18,6 @@ function StartupNotice() {
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-stone-950/90 px-4 backdrop-blur-[45px]">
       <div className="relative w-full max-w-md overflow-hidden rounded-[2rem] border border-stone-200/20 bg-white p-6 shadow-2xl sm:p-8">
-        
         {/* Header */}
         <div className="text-center mb-6">
           <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary mb-1">
@@ -28,29 +27,29 @@ function StartupNotice() {
             RVCE Student Induction Portal
           </h2>
           <p className="mt-2 text-sm text-stone-500 leading-6">
-            This portal will be live during the Student Induction Programme. 
+            This portal will be live during the Student Induction Programme.
           </p>
         </div>
 
         {/* Divider */}
         <div className="h-px bg-stone-100 mb-6" />
 
-        {/* QR Code */}
+        {/* Link */}
         <div className="flex flex-col items-center gap-3">
-  
-    <a href={RVCE_WEBSITE}
-    target="_blank"
-    rel="noreferrer"
-    className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-transform hover:-translate-y-0.5"
-  >
-    <ExternalLink size={15} />
-    Visit RVCE Website
-  </a>
-  <p className="text-xs text-stone-400 text-center">
-    RV College of Engineering · Mysore Road, Bengaluru - 560059
-  </p>
-</div>
+          <a
+            href={RVCE_WEBSITE}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-transform hover:-translate-y-0.5"
+          >
+            <ExternalLink size={15} />
+            Visit RVCE Website
+          </a>
 
+          <p className="text-xs text-stone-400 text-center">
+            RV College of Engineering · Mysore Road, Bengaluru - 560059
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -58,13 +57,20 @@ function StartupNotice() {
 
 function AppContent() {
   return (
-<div className="relative flex h-[100dvh] flex-col overflow-hidden bg-[#FAFAF9]">
+    <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-[#FAFAF9]">
       <DotGrid />
-      <StartupNotice />
+
+      {/* Startup notice temporarily disabled */}
+      {/* <StartupNotice /> */}
+
       <div className="relative z-50 shrink-0 px-3 pb-3 pt-3 sm:px-5 sm:pb-4 sm:pt-4">
         <Navigation />
       </div>
-      <div id="main-scroll-container" className="relative z-10 flex-1 overflow-y-auto">
+
+      <div
+        id="main-scroll-container"
+        className="relative z-10 flex-1 overflow-y-auto"
+      >
         <ClickSpark
           sparkColor="#f97316"
           sparkSize={10}
@@ -78,7 +84,10 @@ function AppContent() {
               <Route path="/schedule" element={<SchedulePage />} />
               <Route path="/announcements" element={<AnnouncementsPage />} />
               <Route path="/map" element={<MapPage />} />
-              <Route path="/sipannouncements/secretlogin" element={<SecretLoginPage />} />
+              <Route
+                path="/sipannouncements/secretlogin"
+                element={<SecretLoginPage />}
+              />
               <Route
                 path="/sipannouncements/admin"
                 element={

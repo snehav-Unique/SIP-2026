@@ -15,6 +15,11 @@ import { db } from "../config/firebase";
 import { Announcement } from "../data/announcements";
 import { campusLocations } from "../data/campusLocations";
 import { uploadAnnouncementFile } from "../utils/uploadfile";
+import { parseStudentFile } from "../utils/parseStudentFile";
+import {
+  saveRawCsvToFirestore,
+  clearAndUploadStudents,
+} from "../utils/uploadStudentFile";
 import dayjs, { Dayjs } from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -168,6 +173,15 @@ export function DeanDashboard() {
   const [selectedEditFile, setSelectedEditFile] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [studentFile, setStudentFile] = useState<File | null>(null);
+  const [uploadingStudents, setUploadingStudents] = useState(false);
+  const [uploadSummary, setUploadSummary] = useState<{
+    imported: number;
+    invalidCount: number;
+    totalRows: number;
+    failed: number;
+    status: "success" | "error";
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<Omit<Announcement, "id">>({
     title: "",
@@ -181,6 +195,7 @@ export function DeanDashboard() {
   });
 
   const busy = isSaving || uploading;
+  const studentUploadBusy = uploadingStudents;
 
   const resetCreateForm = () => {
     setForm({
@@ -194,6 +209,45 @@ export function DeanDashboard() {
       hasDocument: false,
     });
     setSelectedFile(null);
+  };
+
+  const handleStudentUpload = async () => {
+    if (!studentFile) return;
+
+    // Capture file before any state changes
+    const fileToProcess = studentFile;
+
+    setUploadingStudents(true);
+    setUploadSummary(null);
+
+    try {
+      const rawCsv = await fileToProcess.text();
+      const { valid, invalidCount, totalRows } =
+        await parseStudentFile(fileToProcess);
+
+      await saveRawCsvToFirestore(rawCsv, fileToProcess.name, valid.length);
+      const { imported, failed } = await clearAndUploadStudents(valid);
+
+      setUploadSummary({
+        imported,
+        invalidCount,
+        totalRows,
+        failed,
+        status: "success",
+      });
+      setStudentFile(null);
+    } catch (err) {
+      console.error("Student upload error:", err);
+      setUploadSummary({
+        imported: 0,
+        invalidCount: 0,
+        totalRows: 0,
+        failed: 0,
+        status: "error",
+      });
+    } finally {
+      setUploadingStudents(false);
+    }
   };
 
   const handleCreate = async () => {
@@ -590,6 +644,72 @@ export function DeanDashboard() {
             </div>
           </div>
         )}
+
+        <div className="mb-8 rounded-2xl border border-stone-100 bg-white p-5 shadow-sm sm:p-6">
+          <h2 className="mb-1 text-xl font-bold text-stone-950">
+            Upload Student Data
+          </h2>
+          <p className="mb-4 text-sm text-stone-500">
+            Upload an Excel or CSV file. All existing student records will be
+            replaced with the new file.
+          </p>
+
+          <div className="space-y-3">
+            <input
+              type="file"
+              accept=".xlsx,.csv"
+              onChange={(e) => setStudentFile(e.target.files?.[0] ?? null)}
+              className="block w-full cursor-pointer rounded-lg border border-dashed border-primary/40 bg-white px-4 py-2 text-sm text-stone-600 file:mr-4 file:rounded-full file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
+              disabled={studentUploadBusy}
+            />
+            {studentFile && (
+              <p className="text-xs text-stone-500">
+                Selected: {studentFile.name}
+              </p>
+            )}
+            <button
+              onClick={handleStudentUpload}
+              disabled={!studentFile || studentUploadBusy}
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-semibold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
+            >
+              {uploadingStudents
+                ? "Uploading..."
+                : "Upload & Replace Student Data"}
+            </button>
+          </div>
+
+          {uploadSummary && (
+            <div
+              className={`mt-4 rounded-xl border p-4 text-sm ${
+                uploadSummary.status === "success"
+                  ? "border-green-200 bg-green-50 text-green-800"
+                  : "border-red-200 bg-red-50 text-red-700"
+              }`}
+            >
+              {uploadSummary.status === "success" ? (
+                <ul className="space-y-1">
+                  <li>
+                    Total rows in file: <strong>{uploadSummary.totalRows}</strong>
+                  </li>
+                  <li>
+                    Records imported: <strong>{uploadSummary.imported}</strong>
+                  </li>
+                  <li>
+                    Invalid rows skipped:{" "}
+                    <strong>{uploadSummary.invalidCount}</strong>
+                  </li>
+                  {uploadSummary.failed > 0 && (
+                    <li>
+                      Failed to write: <strong>{uploadSummary.failed}</strong>
+                    </li>
+                  )}
+                </ul>
+              ) : (
+                <p>Upload failed. Check your file format and try again.</p>
+              )}
+            </div>
+          )}
+        </div>
 
         <h2 className="mb-4 text-xl font-bold text-stone-950">
           Announcements ({announcements.length})
