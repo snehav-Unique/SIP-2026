@@ -7,6 +7,7 @@ export interface StudentRecord {
   department?: string;
   reportingTime?: string;
   block?: string;
+  group?: string;
   slot1Time?: string;
   slot1Venue?: string;
   slot2Time?: string;
@@ -70,6 +71,11 @@ export async function parseStudentFile(file: File): Promise<ParseResult> {
       normalized["dept"] ||
       "";
 
+    const group =
+      normalized["group"] ||
+      normalized["student group"] ||
+      "";
+
     // Slot 1 is the primary venue and reporting time
     const slot1Time = normalized["slot 1time"] || normalized["slot 1 time"] || "";
     const slot1Venue = normalized["slot 1venue"] || normalized["slot 1 venue"] || "";
@@ -97,6 +103,7 @@ export async function parseStudentFile(file: File): Promise<ParseResult> {
       reportingTime: slot1Time.trim(),
       department: department.trim(),
       block: "",
+      group: group.trim(),
       // All slots stored individually
       slot1Time: slot1Time.trim(),
       slot1Venue: slot1Venue.trim(),

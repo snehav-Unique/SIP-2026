@@ -14,7 +14,10 @@ export function AnnouncementsPage() {
     return announcements
       .filter((announcement) => isAnnouncementCurrentOrUpcoming(announcement, now))
       .sort((a, b) => {
-        const dateDiff = new Date(a.date).getTime() - new Date(b.date).getTime();
+        if (a.type === "general" && b.type !== "general") return -1;
+        if (b.type === "general" && a.type !== "general") return 1;
+
+        const dateDiff = new Date(a.date || 0).getTime() - new Date(b.date || 0).getTime();
         if (dateDiff !== 0) return dateDiff;
         return (a.time ?? "").localeCompare(b.time ?? "");
       });
@@ -97,11 +100,13 @@ export function AnnouncementsPage() {
                   </div>
 
                   <div className="mt-5 flex flex-wrap gap-3 text-sm text-stone-500">
-                    <span className="inline-flex items-center gap-2 rounded-full bg-stone-50 px-3 py-1.5">
-                      <CalendarDays size={14} className="text-primary" />
-                      {new Date(announcement.date).toLocaleDateString()}
-                    </span>
-                    {announcement.time && (
+                    {announcement.type !== "general" && announcement.date && (
+                      <span className="inline-flex items-center gap-2 rounded-full bg-stone-50 px-3 py-1.5">
+                        <CalendarDays size={14} className="text-primary" />
+                        {new Date(announcement.date).toLocaleDateString()}
+                      </span>
+                    )}
+                    {announcement.type !== "general" && announcement.time && (
                       <span className="inline-flex items-center gap-2 rounded-full bg-stone-50 px-3 py-1.5">
                         <Clock3 size={14} className="text-primary" />
                         {announcement.time}

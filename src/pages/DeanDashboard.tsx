@@ -105,9 +105,9 @@ function FileAttachmentRow({
           className="h-4 w-4 accent-primary"
           disabled={disabled}
         />
-        <span className="text-sm font-medium text-stone-700">
-          Attach a file (PDF, PNG, JPG or JPEG)
-        </span>
+          <span className="text-sm font-medium text-stone-700">
+            Attach a file (PDF, Images, Excel, CSV, Word)
+          </span>
       </label>
 
       <div className="mt-3 space-y-2">
@@ -137,7 +137,7 @@ function FileAttachmentRow({
         <input
           id={inputId}
           type="file"
-          accept=".pdf,image/*"
+          accept=".pdf,image/*,.xlsx,.csv,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
           onChange={(e) => {
             const nextFile = e.target.files?.[0] ?? null;
             onFileChange(nextFile);
@@ -153,7 +153,7 @@ function FileAttachmentRow({
         <div className="flex flex-wrap items-center gap-2">
           <Upload size={14} className="text-primary" />
           <p className="text-xs text-stone-400">
-            PDF, PNG, JPG or JPEG accepted. Choosing a file enables the
+            PDF, Images, Excel (XLSX, CSV), and Word (DOC, DOCX) accepted. Choosing a file enables the
             attachment automatically.
           </p>
         </div>
@@ -192,6 +192,7 @@ export function DeanDashboard() {
     author: "Dean",
     category: "Dean",
     hasDocument: false,
+    type: "event",
   });
 
   const busy = isSaving || uploading;
@@ -207,6 +208,7 @@ export function DeanDashboard() {
       author: "Dean",
       category: "Dean",
       hasDocument: false,
+      type: "event",
     });
     setSelectedFile(null);
   };
@@ -257,8 +259,12 @@ export function DeanDashboard() {
       );
       return;
     }
-    if (!form.title.trim() || !form.date || !form.description.trim()) {
-      setError("Title, date and description are required");
+    if (!form.title.trim() || !form.description.trim()) {
+      setError("Title and description are required");
+      return;
+    }
+    if (form.type === "event" && !form.date) {
+      setError("Date is required for event announcements");
       return;
     }
     if (form.hasDocument && !selectedFile) {
@@ -303,6 +309,7 @@ export function DeanDashboard() {
         category: formSnapshot.category,
         author: "Dean",
         hasDocument: formSnapshot.hasDocument || false,
+        type: formSnapshot.type || "event",
         documentUrl,
         fileUrl,
         documentName,
@@ -365,6 +372,14 @@ export function DeanDashboard() {
       setError("Please select a file to attach for this notice");
       return;
     }
+    if (!editForm.title.trim() || !editForm.description.trim()) {
+      setError("Title and description are required");
+      return;
+    }
+    if (editForm.type !== "general" && !editForm.date) {
+      setError("Date is required for event announcements");
+      return;
+    }
 
     // ✅ Capture both file and form state BEFORE any state changes
     const fileToUpload = selectedEditFile;
@@ -386,6 +401,7 @@ export function DeanDashboard() {
         location: editSnapshot.location?.trim() || "",
         category: editSnapshot.category,
         hasDocument: editSnapshot.hasDocument || false,
+        type: editSnapshot.type || "event",
         updatedAt: serverTimestamp(),
         ...(!hasCreatedAt ? { createdAt: serverTimestamp() } : {}),
       };
@@ -496,7 +512,21 @@ export function DeanDashboard() {
                 className="w-full rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
                 disabled={busy}
               />
-              <div className="grid gap-3 sm:grid-cols-2 sm:items-end">
+              <div className="flex flex-wrap items-center gap-4">
+                <select
+                  value={form.type || "event"}
+                  onChange={(e) =>
+                    setForm({ ...form, type: e.target.value as any })
+                  }
+                  className="rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary font-medium"
+                  disabled={busy}
+                >
+                  <option value="event">Event (Date Specific)</option>
+                  <option value="general">General Announcement</option>
+                </select>
+              </div>
+              {form.type !== "general" && (
+                <div className="grid gap-3 sm:grid-cols-2 sm:items-end">
                 <div className="flex flex-col gap-1">
                   <label className="text-xs font-semibold text-stone-600">
                     Date <span className="text-red-500">*</span>
@@ -555,6 +585,7 @@ export function DeanDashboard() {
                   </LocalizationProvider>
                 </ThemeProvider>
               </div>
+              )}
               <select
                 value={form.location || ""}
                 onChange={(e) =>
@@ -738,7 +769,21 @@ export function DeanDashboard() {
                       className="w-full rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary"
                       disabled={busy}
                     />
-                    <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="flex flex-wrap items-center gap-4">
+                      <select
+                        value={editForm.type || "event"}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, type: e.target.value as any })
+                        }
+                        className="rounded-lg border border-stone-200 p-3 outline-none transition focus:border-primary font-medium"
+                        disabled={busy}
+                      >
+                        <option value="event">Event (Date Specific)</option>
+                        <option value="general">General Announcement</option>
+                      </select>
+                    </div>
+                    {editForm.type !== "general" && (
+                      <div className="grid gap-3 sm:grid-cols-2">
                       <input
                         type="date"
                         value={editForm.date}
@@ -788,6 +833,7 @@ export function DeanDashboard() {
                         </LocalizationProvider>
                       </ThemeProvider>
                     </div>
+                    )}
                     <select
                       value={editForm.location || ""}
                       onChange={(e) =>

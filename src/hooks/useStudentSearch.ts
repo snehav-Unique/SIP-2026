@@ -9,6 +9,7 @@ export interface StudentRecord {
   department?: string;
   reportingTime?: string;
   block?: string;
+  group?: string;
 }
 
 export function useStudentSearch() {
