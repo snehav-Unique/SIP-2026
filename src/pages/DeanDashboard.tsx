@@ -230,6 +230,36 @@ export function DeanDashboard() {
       await saveRawCsvToFirestore(rawCsv, fileToProcess.name, valid.length);
       const { imported, failed } = await clearAndUploadStudents(valid);
 
+      // Save CSV to config/studentCsv for download
+      const headers = [
+        "usn",
+        "name",
+        "department",
+        "group",
+        "slot1Time",
+        "slot1Venue",
+        "slot2Time",
+        "slot2Venue",
+        "slot3Time",
+        "slot3Venue",
+      ];
+      const csvRows = [
+        headers.join(","),
+        ...valid.map((s) =>
+          headers
+            .map((h) => `"${String(s[h as keyof typeof s] || "").replace(/"/g, '""')}"`)
+            .join(",")
+        ),
+      ];
+      const csvContent = csvRows.join("\n");
+
+      await setDoc(doc(db, "config", "studentCsv"), {
+        content: csvContent,
+        fileName: fileToProcess.name.replace(".xlsx", ".csv"),
+        uploadedAt: new Date().toISOString(),
+        totalStudents: valid.length,
+      });
+
       setUploadSummary({
         imported,
         invalidCount,
