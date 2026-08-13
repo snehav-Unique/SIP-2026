@@ -13,14 +13,13 @@ export function StudentSearch() {
     clear();
   };
 
+  // Slot 1/2/3 are just time ranges on this schema — venue is shared, not per-slot
   const slots = result
-    ? [1, 2, 3, 4, 5, 6]
-        .map((n) => ({
-          number: n,
-          time: (result as any)[`slot${n}Time`],
-          venue: (result as any)[`slot${n}Venue`],
-        }))
-        .filter((s) => s.time || s.venue)
+    ? [
+        { number: 1, time: result.slot1 },
+        { number: 2, time: result.slot2 },
+        { number: 3, time: result.slot3 },
+      ].filter((s) => s.time)
     : [];
 
   return (
@@ -43,7 +42,7 @@ export function StudentSearch() {
           />
           <input
             type="text"
-            placeholder="e.g. RVCE25BCS001"
+            placeholder="e.g. 1RV24AI001"
             value={usn}
             onChange={(e) => setUsn(e.target.value.toUpperCase())}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -90,16 +89,28 @@ export function StudentSearch() {
             </div>
           </div>
 
-          {result.department && (
+          {result.branch && (
             <div className="mb-4 flex items-center gap-2 rounded-xl border border-stone-100 bg-white px-3 py-2.5">
               <GraduationCap size={14} className="shrink-0 text-primary" />
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
-                  Department
+                  Branch
                 </p>
                 <p className="text-sm font-semibold text-stone-900">
-                  {result.department}
+                  {result.branch}
                 </p>
+              </div>
+            </div>
+          )}
+
+          {result.venue && (
+            <div className="mb-4 flex items-center gap-2 rounded-xl border border-stone-100 bg-white px-3 py-2.5">
+              <MapPinIcon size={14} className="shrink-0 text-primary" />
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+                  Venue
+                </p>
+                <p className="text-sm font-semibold text-stone-900">{result.venue}</p>
               </div>
             </div>
           )}
@@ -112,7 +123,7 @@ export function StudentSearch() {
               {slots.map((slot) => (
                 <div
                   key={slot.number}
-                  className="grid grid-cols-[auto_1fr_1fr] items-center gap-3 rounded-xl border border-stone-100 bg-white px-3 py-2.5"
+                  className="flex items-center gap-3 rounded-xl border border-stone-100 bg-white px-3 py-2.5"
                 >
                   <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
                     {slot.number}
@@ -124,35 +135,12 @@ export function StudentSearch() {
                         Time
                       </p>
                       <p className="text-xs font-semibold text-stone-900">
-                        {slot.time || "TBA"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <MapPinIcon size={12} className="shrink-0 text-primary" />
-                    <div>
-                      <p className="text-[9px] font-bold uppercase tracking-wider text-stone-400">
-                        Venue
-                      </p>
-                      <p className="text-xs font-semibold text-stone-900">
-                        {slot.venue || "TBA"}
+                        {slot.time}
                       </p>
                     </div>
                   </div>
                 </div>
               ))}
-            </div>
-          )}
-
-          {slots.length === 0 && result.venue && (
-            <div className="flex items-center gap-2 rounded-xl border border-stone-100 bg-white px-3 py-2.5">
-              <MapPinIcon size={14} className="shrink-0 text-primary" />
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
-                  Venue
-                </p>
-                <p className="text-sm font-semibold text-stone-900">{result.venue}</p>
-              </div>
             </div>
           )}
         </div>

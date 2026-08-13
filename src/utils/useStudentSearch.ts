@@ -3,24 +3,16 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "../config/firebase";
 
 export interface StudentRecord {
+  slNo: string;
+  studentId: string;
   usn: string;
   name: string;
+  branch: string;
+  group: string;
+  slot1: string;
+  slot2: string;
+  slot3: string;
   venue: string;
-  department?: string;
-  reportingTime?: string;
-  block?: string;
-  slot1Time?: string;
-  slot1Venue?: string;
-  slot2Time?: string;
-  slot2Venue?: string;
-  slot3Time?: string;
-  slot3Venue?: string;
-  slot4Time?: string;
-  slot4Venue?: string;
-  slot5Time?: string;
-  slot5Venue?: string;
-  slot6Time?: string;
-  slot6Venue?: string;
 }
 
 export function useStudentSearch() {

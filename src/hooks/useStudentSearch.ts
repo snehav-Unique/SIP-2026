@@ -1,15 +1,17 @@
 import { useState } from "react";
-import { collection, doc, getDoc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { db } from "../config/firebase";
 
 export interface StudentRecord {
-  usn: string;
   name: string;
+  studentId: string;
+  usn: string;
+  branch: string;
+  group: string;
   venue: string;
-  department?: string;
-  reportingTime?: string;
-  block?: string;
-  group?: string;
+  slot1: string;
+  slot2: string;
+  slot3: string;
 }
 
 export function useStudentSearch() {
@@ -23,20 +25,38 @@ export function useStudentSearch() {
       setNotFound(false);
       return;
     }
+
     setSearching(true);
     setNotFound(false);
     setResult(null);
+
     try {
-      const ref = doc(collection(db, "students"), usn.trim().toUpperCase());
+      const studentId = usn.trim().toUpperCase();
+
+      const ref = doc(db, "students", studentId);
       const snap = await getDoc(ref);
+
       if (snap.exists()) {
-        setResult(snap.data() as StudentRecord);
+        const data = snap.data();
+
+        setResult({
+          name: data.name ?? "",
+          studentId: data.studentId || studentId,
+          usn: data.usn || studentId,
+          branch: data.branch ?? "",
+          group: data.group ?? "",
+          venue: data.venue ?? "",
+          slot1: data.slot1 ?? "",
+          slot2: data.slot2 ?? "",
+          slot3: data.slot3 ?? "",
+        });
+
         setNotFound(false);
       } else {
-        setResult(null);
         setNotFound(true);
       }
-    } catch {
+    } catch (error) {
+      console.error("Error searching student:", error);
       setNotFound(true);
     } finally {
       setSearching(false);
@@ -48,5 +68,11 @@ export function useStudentSearch() {
     setNotFound(false);
   };
 
-  return { result, searching, notFound, search, clear };
+  return {
+    result,
+    searching,
+    notFound,
+    search,
+    clear,
+  };
 }
