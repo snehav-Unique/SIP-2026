@@ -30,7 +30,7 @@ export function StudentSearch() {
         </p>
         <h2 className="mt-1 text-xl font-bold text-stone-950">Search by Student ID</h2>
         <p className="mt-1 text-sm text-stone-500">
-          Enter your USN to find your venue and reporting times.
+          Enter your Student ID to find your venue and reporting times.
         </p>
       </div>
 
@@ -83,7 +83,7 @@ export function StudentSearch() {
                 {result.usn}
               </p>
               <p className="text-base font-bold text-stone-950">
-                {result.group && <span className="mr-2 text-primary">You belong to - {result.group} &bull;</span>}
+                {result.group && <span className="mr-2 text-primary">You belong to - group {result.group} &bull;</span>}
                 {result.name}
               </p>
             </div>
