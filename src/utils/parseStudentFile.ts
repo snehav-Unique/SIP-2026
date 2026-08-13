@@ -3,7 +3,6 @@ import * as XLSX from "xlsx";
 export interface StudentRecord {
   slNo: string;
   studentId: string;
-  usn: string;
   name: string;
   branch: string;
   group: string;
@@ -37,12 +36,11 @@ export async function parseStudentFile(file: File): Promise<ParseResult> {
       normalized[key.toLowerCase().trim()] = String(row[key]).trim();
     }
 
-    const usn = normalized["usn"] || "";
-    const studentId = normalized["student id"] || usn;
+    const studentId = normalized["student id"] || "";
     const name = normalized["name"] || "";
 
-    // usn + name are the only fields we require to keep a row
-    if (!usn || !name) {
+    // studentId + name are the only required fields
+    if (!studentId || !name) {
       invalidCount++;
       continue;
     }
@@ -50,7 +48,6 @@ export async function parseStudentFile(file: File): Promise<ParseResult> {
     valid.push({
       slNo: normalized["sl no"] || "",
       studentId: studentId.toUpperCase().trim(),
-      usn: usn.toUpperCase().trim(),
       name: name.trim(),
       branch: normalized["branch"] || "",
       group: normalized["group"] || "",

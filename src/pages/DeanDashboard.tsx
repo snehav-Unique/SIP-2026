@@ -232,16 +232,14 @@ export function DeanDashboard() {
 
       // Save CSV to config/studentCsv for download
       const headers = [
-        "usn",
+        "studentId",
         "name",
-        "department",
+        "branch",
         "group",
-        "slot1Time",
-        "slot1Venue",
-        "slot2Time",
-        "slot2Venue",
-        "slot3Time",
-        "slot3Venue",
+        "slot1",
+        "slot2",
+        "slot3",
+        "venue",
       ];
       const csvRows = [
         headers.join(","),

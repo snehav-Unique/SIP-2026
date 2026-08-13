@@ -5,7 +5,6 @@ import { db } from "../config/firebase";
 export interface StudentRecord {
   slNo: string;
   studentId: string;
-  usn: string;
   name: string;
   branch: string;
   group: string;
@@ -20,8 +19,8 @@ export function useStudentSearch() {
   const [searching, setSearching] = useState(false);
   const [notFound, setNotFound] = useState(false);
 
-  const search = async (usn: string) => {
-    if (!usn.trim()) {
+  const search = async (studentId: string) => {
+    if (!studentId.trim()) {
       setResult(null);
       setNotFound(false);
       return;
@@ -30,7 +29,7 @@ export function useStudentSearch() {
     setNotFound(false);
     setResult(null);
     try {
-      const ref = doc(db, "students", usn.trim().toUpperCase());
+      const ref = doc(db, "students", studentId.trim().toUpperCase());
       const snap = await getDoc(ref);
       if (snap.exists()) {
         setResult(snap.data() as StudentRecord);

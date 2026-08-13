@@ -5,7 +5,6 @@ import { StudentRecord } from "../hooks/useStudentSearch";
 const HEADERS = [
   "Sl no",
   "Student id",
-  "Usn",
   "Name",
   "Branch",
   "Group",
@@ -26,7 +25,6 @@ function toRow(record: StudentRecord, index: number): string {
   const fields = [
     String(index + 1),
     record.studentId ?? "",
-    record.usn ?? "",
     record.name ?? "",
     record.branch ?? "",
     record.group ?? "",

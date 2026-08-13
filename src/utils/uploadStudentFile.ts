@@ -61,7 +61,7 @@ export async function clearAndUploadStudents(
 
   for (const record of records) {
     try {
-      const ref = doc(db, "students", record.usn);
+      const ref = doc(db, "students", record.studentId);
       writeBatchInstance.set(ref, record);
       writeCount++;
       imported++;

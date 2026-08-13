@@ -3,15 +3,15 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "../config/firebase";
 
 export interface StudentRecord {
-  name: string;
+  slNo: string;
   studentId: string;
-  usn: string;
+  name: string;
   branch: string;
   group: string;
-  venue: string;
   slot1: string;
   slot2: string;
   slot3: string;
+  venue: string;
 }
 
 export function useStudentSearch() {
@@ -19,44 +19,26 @@ export function useStudentSearch() {
   const [searching, setSearching] = useState(false);
   const [notFound, setNotFound] = useState(false);
 
-  const search = async (usn: string) => {
-    if (!usn.trim()) {
+  const search = async (studentId: string) => {
+    if (!studentId.trim()) {
       setResult(null);
       setNotFound(false);
       return;
     }
-
     setSearching(true);
     setNotFound(false);
     setResult(null);
-
     try {
-      const studentId = usn.trim().toUpperCase();
-
-      const ref = doc(db, "students", studentId);
+      const ref = doc(db, "students", studentId.trim().toUpperCase());
       const snap = await getDoc(ref);
-
       if (snap.exists()) {
-        const data = snap.data();
-
-        setResult({
-          name: data.name ?? "",
-          studentId: data.studentId || studentId,
-          usn: data.usn || studentId,
-          branch: data.branch ?? "",
-          group: data.group ?? "",
-          venue: data.venue ?? "",
-          slot1: data.slot1 ?? "",
-          slot2: data.slot2 ?? "",
-          slot3: data.slot3 ?? "",
-        });
-
+        setResult(snap.data() as StudentRecord);
         setNotFound(false);
       } else {
+        setResult(null);
         setNotFound(true);
       }
-    } catch (error) {
-      console.error("Error searching student:", error);
+    } catch {
       setNotFound(true);
     } finally {
       setSearching(false);
@@ -68,11 +50,5 @@ export function useStudentSearch() {
     setNotFound(false);
   };
 
-  return {
-    result,
-    searching,
-    notFound,
-    search,
-    clear,
-  };
+  return { result, searching, notFound, search, clear };
 }

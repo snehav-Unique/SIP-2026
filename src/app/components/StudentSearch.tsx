@@ -3,13 +3,13 @@ import { Search, X, User, GraduationCap, Clock3 as ClockIcon, MapPin as MapPinIc
 import { useStudentSearch } from "../../hooks/useStudentSearch";
 
 export function StudentSearch() {
-  const [usn, setUsn] = useState("");
+  const [studentId, setStudentId] = useState("");
   const { result, searching, notFound, search, clear } = useStudentSearch();
 
-  const handleSearch = () => search(usn);
+  const handleSearch = () => search(studentId);
 
   const handleClear = () => {
-    setUsn("");
+    setStudentId("");
     clear();
   };
 
@@ -43,15 +43,15 @@ export function StudentSearch() {
           <input
             type="text"
             placeholder="e.g. 1RV24AI001"
-            value={usn}
-            onChange={(e) => setUsn(e.target.value.toUpperCase())}
+            value={studentId}
+            onChange={(e) => setStudentId(e.target.value.toUpperCase())}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             className="w-full rounded-xl border border-stone-200 py-3 pl-9 pr-4 text-sm font-semibold tracking-wider outline-none transition focus:border-primary"
           />
         </div>
         <button
           onClick={handleSearch}
-          disabled={!usn.trim() || searching}
+          disabled={!studentId.trim() || searching}
           className="rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:opacity-50"
         >
           {searching ? "..." : "Search"}
@@ -68,7 +68,7 @@ export function StudentSearch() {
 
       {notFound && (
         <div className="mt-4 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
-          No student found for USN <strong>{usn}</strong>. Check the USN and try again.
+          No student found for Student ID <strong>{studentId}</strong>. Check the ID and try again.
         </div>
       )}
 
@@ -80,10 +80,10 @@ export function StudentSearch() {
             </div>
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-primary">
-                {result.usn}
+                {result.studentId}
               </p>
               <p className="text-base font-bold text-stone-950">
-                {result.group && <span className="mr-2 text-primary">You belong to - group {result.group} &bull;</span>}
+                {result.group && <span className="mr-2 text-primary">You belong to - {result.group} &bull;</span>}
                 {result.name}
               </p>
             </div>
