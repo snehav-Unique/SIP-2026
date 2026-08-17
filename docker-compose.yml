@@ -4,5 +4,5 @@ services:
   sip-portal:
     build: .
     ports:
-      - "3000:80"
+      - "5001:80"
     restart: unless-stopped
