@@ -20,13 +20,13 @@ import {
 } from "lucide-react";
 import AnimatedContent from "../components/AnimatedContent";
 import SplitText from "../components/SplitText";
-import { scheduleData, type CycleType } from "../data/scheduleData";
+import { scheduleData, type GroupType } from "../data/scheduleData";
 import schedulePdf from "../../Sip-Shedule-2025-old.pdf";
 import { useStudentSearch } from "../hooks/useStudentSearch";
 import { downloadStudentCsv } from "../utils/downloadStudentCsv";
 import { StudentSearch } from "../app/components/StudentSearch";
 
-const CYCLE_STORAGE_KEY = "rvce_schedule_cycle";
+const GROUP_STORAGE_KEY = "rvce_schedule_group";
 
 function formatDateLabel(dateString: string) {
   return new Intl.DateTimeFormat("en-GB", {
@@ -75,10 +75,10 @@ function getSessionStatus(session: { date: string; time?: string }, now: Date) {
   return "upcoming";
 }
 
-function getVisibleSessions(selectedCycle: CycleType | null) {
-  if (!selectedCycle) return [];
+function getVisibleSessions(selectedGroup: GroupType | null) {
+  if (!selectedGroup) return [];
   return scheduleData.filter(
-    (session) => session.cycle === "Both" || session.cycle === selectedCycle,
+    (session) => session.group === selectedGroup,
   );
 }
 
@@ -94,7 +94,7 @@ function getAutoScrollDate(groupedSessions: { date: string }[], now: Date) {
   );
 }
 
-function CyclePickerScreen({ onSelect }: { onSelect: (cycle: CycleType) => void }) {
+function GroupPickerScreen({ onSelect }: { onSelect: (group: GroupType) => void }) {
   return (
     <div className="min-h-screen px-3 py-4 sm:px-5 lg:px-8">
       <div className="mx-auto flex min-h-[calc(100vh-2rem)] max-w-5xl items-center">
@@ -106,10 +106,10 @@ function CyclePickerScreen({ onSelect }: { onSelect: (cycle: CycleType) => void 
                 SIP 2026 Schedule
               </span>
               <h1 className="mt-5 text-3xl font-bold leading-tight sm:text-4xl">
-                Choose your cycle to build your timeline.
+                Choose your group to build your timeline.
               </h1>
               <p className="mt-4 text-sm leading-7 text-white/70">
-                Your schedule will show sessions for your cycle plus shared events that apply to everyone.
+                Your schedule will show the sessions assigned to your group.
               </p>
               <div className="mt-8 grid grid-cols-3 gap-3 text-center">
                 <div className="rounded-2xl border border-white/10 bg-white/10 p-3">
@@ -118,7 +118,7 @@ function CyclePickerScreen({ onSelect }: { onSelect: (cycle: CycleType) => void 
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-white/10 p-3">
                   <p className="text-2xl font-bold">2</p>
-                  <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-white/45">Cycles</p>
+                  <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-white/45">Groups</p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-white/10 p-3">
                   <p className="text-2xl font-bold">SIP</p>
@@ -129,20 +129,20 @@ function CyclePickerScreen({ onSelect }: { onSelect: (cycle: CycleType) => void 
 
             <div className="p-5 sm:p-7 lg:p-10">
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary">
-                Which cycle are you in?
+                Which group are you in?
               </p>
               <div className="mt-5 grid gap-4">
-                {(["Group A", "Group B"] as CycleType[]).map((cycle) => (
+                {(["Group A", "Group B"] as GroupType[]).map((group) => (
                   <button
-                    key={cycle}
-                    onClick={() => onSelect(cycle)}
+                    key={group}
+                    onClick={() => onSelect(group)}
                     className="group flex items-center justify-between gap-4 rounded-2xl border border-stone-200 bg-white p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-lg hover:shadow-primary/10"
                   >
                     <span>
                       <span className="inline-flex rounded-full bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-primary">
-                        {cycle}
+                        {group}
                       </span>
-                      <span className="mt-3 block text-xl font-bold text-stone-950">{cycle}</span>
+                      <span className="mt-3 block text-xl font-bold text-stone-950">{group}</span>
                       <span className="mt-1 block text-sm leading-6 text-stone-500">
                         View a clean timeline for this group.
                       </span>
@@ -161,26 +161,26 @@ function CyclePickerScreen({ onSelect }: { onSelect: (cycle: CycleType) => void 
   );
 }
 
-function CycleQuickSwitch({
-  selectedCycle,
+function GroupQuickSwitch({
+  selectedGroup,
   onSelect,
 }: {
-  selectedCycle: CycleType;
-  onSelect: (cycle: CycleType) => void;
+  selectedGroup: GroupType;
+  onSelect: (group: GroupType) => void;
   }) {
   return (
     <div className="flex rounded-full border border-stone-200 bg-stone-100 p-1">
-      {(["Group A", "Group B"] as CycleType[]).map((cycle) => (
+      {(["Group A", "Group B"] as GroupType[]).map((group) => (
         <button
-          key={cycle}
-          onClick={() => onSelect(cycle)}
+          key={group}
+          onClick={() => onSelect(group)}
           className={`rounded-full px-3 py-1.5 text-xs font-bold transition-colors sm:px-4 ${
-            selectedCycle === cycle
+            selectedGroup === group
               ? "bg-primary text-white shadow-sm"
               : "text-stone-500 hover:text-stone-900"
           }`}
         >
-          {cycle}
+          {group}
         </button>
       ))}
     </div>
@@ -191,8 +191,8 @@ function EmptyScheduleState() {
   return (
     <div className="rounded-2xl border border-dashed border-stone-200 bg-white p-8 text-center">
       <CalendarDays size={28} className="mx-auto text-stone-300" />
-      <p className="mt-3 font-semibold text-stone-900">No sessions found for this cycle.</p>
-      <p className="mt-1 text-sm text-stone-500">Try switching cycles or checking the PDF schedule.</p>
+      <p className="mt-3 font-semibold text-stone-900">No sessions found for this group.</p>
+      <p className="mt-1 text-sm text-stone-500">Try switching groups or checking the PDF schedule.</p>
     </div>
   );
 }
@@ -202,12 +202,13 @@ export function SchedulePage() {
   const hasAutoScrolledRef = useRef(false);
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
-  const [selectedCycle, setSelectedCycle] = useState<CycleType | null>(() => {
-    const stored = window.localStorage.getItem(CYCLE_STORAGE_KEY);
+  const [now, setNow] = useState(() => new Date());
+  const [selectedGroup, setSelectedGroup] = useState<GroupType | null>(() => {
+    const stored = window.localStorage.getItem(GROUP_STORAGE_KEY);
     return stored === "Group A" || stored === "Group B" ? stored : null;
   });
 
-  const visibleSessions = useMemo(() => getVisibleSessions(selectedCycle), [selectedCycle]);
+  const visibleSessions = useMemo(() => getVisibleSessions(selectedGroup), [selectedGroup]);
 
   const groupedSessions = useMemo(() => {
     const grouped = visibleSessions.reduce<Record<string, typeof visibleSessions>>((acc, session) => {
@@ -231,9 +232,9 @@ export function SchedulePage() {
       .find((session) => getSessionStatus(session, now) !== "completed");
   }, [visibleSessions]);
 
-  const handleSelectCycle = (cycle: CycleType) => {
-    window.localStorage.setItem(CYCLE_STORAGE_KEY, cycle);
-    setSelectedCycle(cycle);
+  const handleSelectGroup = (group: GroupType) => {
+    window.localStorage.setItem(GROUP_STORAGE_KEY, group);
+    setSelectedGroup(group);
   };
 
   const handleDownload = async () => {
@@ -249,7 +250,7 @@ export function SchedulePage() {
   };
 
   useEffect(() => {
-    if (!selectedCycle || groupedSessions.length === 0 || hasAutoScrolledRef.current) return;
+    if (!selectedGroup || groupedSessions.length === 0 || hasAutoScrolledRef.current) return;
 
     const frame = window.requestAnimationFrame(() => {
       autoScrollTargetRef.current?.scrollIntoView({
@@ -260,13 +261,20 @@ export function SchedulePage() {
     });
 
     return () => window.cancelAnimationFrame(frame);
-  }, [groupedSessions.length, selectedCycle]);
+  }, [groupedSessions.length, selectedGroup]);
 
-  if (!selectedCycle) {
-    return <CyclePickerScreen onSelect={handleSelectCycle} />;
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setNow(new Date());
+    }, 60_000);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
+  if (!selectedGroup) {
+    return <GroupPickerScreen onSelect={handleSelectGroup} />;
   }
 
-  const now = new Date();
   const autoScrollDate = getAutoScrollDate(groupedSessions, now);
 
   return (
@@ -284,7 +292,7 @@ export function SchedulePage() {
                   SIP Schedule
                 </span>
                 <span className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-500">
-                  {selectedCycle}
+                  {selectedGroup}
                 </span>
               </div>
               <AnimatedContent distance={16} duration={0.6} threshold={0.05}>
@@ -299,7 +307,7 @@ export function SchedulePage() {
                 />
               </AnimatedContent>
             </div>
-            <CycleQuickSwitch selectedCycle={selectedCycle} onSelect={handleSelectCycle} />
+            <GroupQuickSwitch selectedGroup={selectedGroup} onSelect={handleSelectGroup} />
           </div>
 
           {nextSession && (
@@ -327,13 +335,13 @@ export function SchedulePage() {
           <div className="mt-5 flex flex-wrap gap-2">
             <button
               onClick={() => {
-                window.localStorage.removeItem(CYCLE_STORAGE_KEY);
-                setSelectedCycle(null);
+                window.localStorage.removeItem(GROUP_STORAGE_KEY);
+                setSelectedGroup(null);
               }}
               className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-600 transition-colors hover:border-primary hover:text-primary"
             >
               <RotateCcw size={15} />
-              Change cycle
+              Change group
             </button>
             <a
               href={schedulePdf}
@@ -433,8 +441,6 @@ export function SchedulePage() {
                         const status = getSessionStatus(session, now);
                         const sessionIsPast = status === "completed";
                         const sessionIsNow = status === "now";
-                        const isBoth = session.cycle === "Both";
-
                         return (
                           <div
                             key={session.id}
@@ -443,8 +449,6 @@ export function SchedulePage() {
                                 ? "border-primary bg-white shadow-lg shadow-primary/10"
                                 : sessionIsPast
                                 ? "border-stone-100 bg-stone-50 opacity-60"
-                                : isBoth
-                                ? "border-primary/20 bg-primary/5 hover:border-primary/40"
                                 : "border-stone-200 bg-white hover:border-primary/30"
                             }`}
                           >
@@ -455,7 +459,7 @@ export function SchedulePage() {
                               ) : sessionIsNow ? (
                                 <Circle size={16} className="text-primary fill-primary/20 bg-white rounded-full" />
                               ) : (
-                                <Circle size={16} className={`${isBoth ? "text-primary" : "text-stone-300"} bg-white rounded-full`} />
+                                <Circle size={16} className="text-stone-300 bg-white rounded-full" />
                               )}
                             </div>
 
@@ -463,17 +467,13 @@ export function SchedulePage() {
                               <div className="flex-1 space-y-1.5">
                                 <div className="flex flex-wrap items-center gap-2">
                                   <h3 className="text-sm font-bold text-stone-950">{session.eventName}</h3>
-                                  {isBoth ? (
-                                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-primary">
-                                      Both cycles
-                                    </span>
-                                  ) : sessionIsNow ? (
+                                  {sessionIsNow ? (
                                     <span className="rounded-full bg-primary px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
                                       Happening now
                                     </span>
                                   ) : (
                                     <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-stone-500">
-                                      {session.cycle}
+                                      {session.group}
                                     </span>
                                   )}
                                 </div>
