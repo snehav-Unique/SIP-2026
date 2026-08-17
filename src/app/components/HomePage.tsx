@@ -17,6 +17,7 @@ import { SpotlightCard } from "./SpotlightCard";
 import { useAnnouncements } from "../../hooks/useAnnouncements";
 import { getAnnouncementTimeRange } from "../../utils/announcementTiming";
 import schedulePdf from "../../../Sip-Shedule-2025-old.pdf";
+import { StudentSearch } from "./StudentSearch";
 
 const resourceCards = [
   { label: "Parent Helpdesk", value: "+91 80 6818 8181", icon: Phone },
@@ -39,11 +40,16 @@ export function HomePage() {
     return announcements
       .map((announcement) => {
         const range = getAnnouncementTimeRange(announcement);
-        const start = range?.start ?? new Date(announcement.date);
+        // Fallback to epoch 0 if date is missing
+        const start = range?.start ?? (announcement.date ? new Date(announcement.date) : new Date(0));
         return { announcement, start, end: range?.end ?? start };
       })
-      .filter(({ end }) => end >= now)
-      .sort((a, b) => a.start.getTime() - b.start.getTime())
+      .filter(({ announcement, end }) => announcement.type === "general" || end >= now)
+      .sort((a, b) => {
+        if (a.announcement.type === "general" && b.announcement.type !== "general") return -1;
+        if (b.announcement.type === "general" && a.announcement.type !== "general") return 1;
+        return a.start.getTime() - b.start.getTime();
+      })
       .slice(0, 4)
       .map(({ announcement }) => announcement);
   }, [announcements]);
@@ -79,6 +85,14 @@ export function HomePage() {
               />
               </div>
           </SpotlightCard>
+        </AnimatedContent>
+
+        <AnimatedContent distance={20} delay={0.1} duration={0.6} threshold={0.05}>
+          <div className="relative">
+            {/* A subtle highlight behind the search box to make it pop */}
+            <div className="absolute -inset-1 rounded-[2rem] bg-gradient-to-r from-primary/30 to-orange-400/30 blur-lg opacity-50" />
+            <StudentSearch />
+          </div>
         </AnimatedContent>
 
         <div className="grid gap-4 lg:grid-cols-3 lg:items-start">

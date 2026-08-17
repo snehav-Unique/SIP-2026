@@ -1,4 +1,4 @@
-export type CycleType = "Physics Cycle" | "Chemistry Cycle";
+export type CycleType = "Group A" | "Group B";
 
 export interface ScheduleSession {
   id: number;
@@ -27,7 +27,7 @@ export const scheduleData: ScheduleSession[] = [
     description: "Talks on career journey and happiness, followed by departmental skill lab session 1.",
     venue: "Sir M V Hall",
     time: "11:00 AM",
-    cycle: "Physics Cycle",
+    cycle: "Group A",
   },
   {
     id: 3,
@@ -36,7 +36,7 @@ export const scheduleData: ScheduleSession[] = [
     description: "Talks on career journey and happiness, followed by departmental skill lab session 1.",
     venue: "Civil Seminar Hall",
     time: "02:00 PM",
-    cycle: "Chemistry Cycle",
+    cycle: "Group B",
   },
   {
     id: 4,
@@ -54,7 +54,7 @@ export const scheduleData: ScheduleSession[] = [
     description: "Orientation on curriculum, OBE, first-year courses, and interaction with HoDs and faculty.",
     venue: "Sir M V Hall",
     time: "10:00 AM",
-    cycle: "Physics Cycle",
+    cycle: "Group A",
   },
   {
     id: 6,
@@ -63,7 +63,7 @@ export const scheduleData: ScheduleSession[] = [
     description: "Orientation on curriculum, OBE, first-year courses, and interaction with HoDs and faculty.",
     venue: "Civil Seminar Hall",
     time: "10:00 AM",
-    cycle: "Chemistry Cycle",
+    cycle: "Group B",
   },
   {
     id: 7,

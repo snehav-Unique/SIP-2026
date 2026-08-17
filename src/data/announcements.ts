@@ -12,6 +12,7 @@ export interface Announcement {
   fileUrl?: string;
   documentName?: string;
   documentType?: string;
+  type?: "event" | "general";
 }
 
 export const defaultAnnouncements: Announcement[] = [
