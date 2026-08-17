@@ -11,6 +11,7 @@ export interface ScheduleSession {
 }
 
 export const scheduleData: ScheduleSession[] = [
+  // ==================== 24 AUGUST ====================
   {
     id: 1,
     date: "2026-08-24",
@@ -72,10 +73,33 @@ export const scheduleData: ScheduleSession[] = [
     group: "Group B",
   },
   {
+    id: 36,
+    date: "2026-08-24",
+    eventName: "Skill Labs",
+    description:
+      "Department-wise skill lab sessions conducted in the respective laboratories.",
+    venue: "Respective Labs",
+    time: "02:00 PM - 05:00 PM",
+    group: "Group A",
+  },
+  {
+    id: 37,
+    date: "2026-08-24",
+    eventName: "Skill Labs",
+    description:
+      "Department-wise skill lab sessions conducted in the respective laboratories.",
+    venue: "Respective Labs",
+    time: "02:00 PM - 05:00 PM",
+    group: "Group B",
+  },
+
+  // ==================== 25 AUGUST ====================
+  {
     id: 7,
     date: "2026-08-25",
     eventName: "Sports Facilities and Physical Well-being",
-    description: "Orientation to sports facilities and physical well-being resources available at RVCE.",
+    description:
+      "Orientation to sports facilities and physical well-being resources available at RVCE.",
     venue: "RVCE",
     time: "09:05 AM - 09:50 AM",
     group: "Group A",
@@ -94,7 +118,8 @@ export const scheduleData: ScheduleSession[] = [
     id: 9,
     date: "2026-08-25",
     eventName: "Training and Placement Orientation",
-    description: "Orientation on training and placement activities and preparation for career success.",
+    description:
+      "Orientation on training and placement activities and preparation for career success.",
     venue: "RVCE",
     time: "11:15 AM - 12:00 PM",
     group: "Group A",
@@ -103,7 +128,8 @@ export const scheduleData: ScheduleSession[] = [
     id: 10,
     date: "2026-08-25",
     eventName: "Health and Wellness Awareness",
-    description: "Awareness session covering the ill effects of tobacco, alcohol and substance abuse.",
+    description:
+      "Awareness session covering the ill effects of tobacco, alcohol and substance abuse.",
     venue: "RVCE",
     time: "12:15 PM - 01:00 PM",
     group: "Group A",
@@ -118,6 +144,28 @@ export const scheduleData: ScheduleSession[] = [
     time: "09:15 AM - 01:00 PM",
     group: "Group B",
   },
+  {
+    id: 38,
+    date: "2026-08-25",
+    eventName: "Skill Labs",
+    description:
+      "Department-wise skill lab sessions conducted in the respective laboratories.",
+    venue: "Respective Labs",
+    time: "02:00 PM - 05:00 PM",
+    group: "Group A",
+  },
+  {
+    id: 39,
+    date: "2026-08-25",
+    eventName: "Skill Labs",
+    description:
+      "Department-wise skill lab sessions conducted in the respective laboratories.",
+    venue: "Respective Labs",
+    time: "02:00 PM - 05:00 PM",
+    group: "Group B",
+  },
+
+  // ==================== 26 AUGUST ====================
   {
     id: 12,
     date: "2026-08-26",
@@ -136,6 +184,8 @@ export const scheduleData: ScheduleSession[] = [
     venue: "RVCE",
     group: "Group B",
   },
+
+  // ==================== 27 AUGUST ====================
   {
     id: 14,
     date: "2026-08-27",
@@ -150,7 +200,8 @@ export const scheduleData: ScheduleSession[] = [
     id: 15,
     date: "2026-08-27",
     eventName: "Sports Facilities and Physical Well-being",
-    description: "Orientation to sports facilities and physical well-being resources available at RVCE.",
+    description:
+      "Orientation to sports facilities and physical well-being resources available at RVCE.",
     venue: "RVCE",
     time: "09:05 AM - 09:50 AM",
     group: "Group B",
@@ -169,7 +220,8 @@ export const scheduleData: ScheduleSession[] = [
     id: 17,
     date: "2026-08-27",
     eventName: "Training and Placement Orientation",
-    description: "Orientation on training and placement activities and preparation for career success.",
+    description:
+      "Orientation on training and placement activities and preparation for career success.",
     venue: "RVCE",
     time: "11:15 AM - 12:00 PM",
     group: "Group B",
@@ -178,7 +230,8 @@ export const scheduleData: ScheduleSession[] = [
     id: 18,
     date: "2026-08-27",
     eventName: "Health and Wellness Awareness",
-    description: "Awareness session covering the ill effects of tobacco, alcohol and substance abuse.",
+    description:
+      "Awareness session covering the ill effects of tobacco, alcohol and substance abuse.",
     venue: "RVCE",
     time: "12:15 PM - 01:00 PM",
     group: "Group B",
@@ -187,16 +240,40 @@ export const scheduleData: ScheduleSession[] = [
     id: 19,
     date: "2026-08-27",
     eventName: "Online Orientation to Student Clubs",
-    description: "Online orientation to student clubs followed by ticket booking for the Club Showcase.",
+    description:
+      "Online orientation to student clubs followed by ticket booking for the Club Showcase.",
     venue: "Online",
     time: "07:00 PM - 09:00 PM",
     group: "Group B",
   },
   {
+    id: 40,
+    date: "2026-08-27",
+    eventName: "Skill Labs",
+    description:
+      "Department-wise skill lab sessions conducted in the respective laboratories.",
+    venue: "Respective Labs",
+    time: "02:00 PM - 05:00 PM",
+    group: "Group A",
+  },
+  {
+    id: 41,
+    date: "2026-08-27",
+    eventName: "Skill Labs",
+    description:
+      "Department-wise skill lab sessions conducted in the respective laboratories.",
+    venue: "Respective Labs",
+    time: "02:00 PM - 05:00 PM",
+    group: "Group B",
+  },
+
+  // ==================== 28 AUGUST ====================
+  {
     id: 20,
     date: "2026-08-28",
     eventName: "Student Clubs Showcase",
-    description: "Showcase of the technical, cultural and innovation ecosystem at RVCE.",
+    description:
+      "Showcase of the technical, cultural and innovation ecosystem at RVCE.",
     venue: "RVCE Campus",
     time: "09:00 AM - 01:00 PM",
     group: "Group A",
@@ -205,7 +282,8 @@ export const scheduleData: ScheduleSession[] = [
     id: 21,
     date: "2026-08-28",
     eventName: "Student Clubs Showcase",
-    description: "Showcase of the technical, cultural and innovation ecosystem at RVCE.",
+    description:
+      "Showcase of the technical, cultural and innovation ecosystem at RVCE.",
     venue: "RVCE Campus",
     time: "09:00 AM - 01:00 PM",
     group: "Group B",
@@ -214,20 +292,24 @@ export const scheduleData: ScheduleSession[] = [
     id: 22,
     date: "2026-08-28",
     eventName: "Skill Labs",
-    description: "Department-wise skill lab sessions conducted in the respective laboratories.",
+    description:
+      "Department-wise skill lab sessions conducted in the respective laboratories.",
     venue: "Respective Labs",
-    time: "02:00 PM - 04:45 PM",
+    time: "02:00 PM - 05:00 PM",
     group: "Group A",
   },
   {
     id: 23,
     date: "2026-08-28",
     eventName: "Skill Labs",
-    description: "Department-wise skill lab sessions conducted in the respective laboratories.",
+    description:
+      "Department-wise skill lab sessions conducted in the respective laboratories.",
     venue: "Respective Labs",
-    time: "02:00 PM - 04:45 PM",
+    time: "02:00 PM - 05:00 PM",
     group: "Group B",
   },
+
+  // ==================== 29 AUGUST ====================
   {
     id: 24,
     date: "2026-08-29",
@@ -249,10 +331,33 @@ export const scheduleData: ScheduleSession[] = [
     group: "Group B",
   },
   {
+    id: 42,
+    date: "2026-08-29",
+    eventName: "Skill Labs",
+    description:
+      "Department-wise skill lab sessions conducted in the respective laboratories.",
+    venue: "Respective Labs",
+    time: "02:00 PM - 05:00 PM",
+    group: "Group A",
+  },
+  {
+    id: 43,
+    date: "2026-08-29",
+    eventName: "Skill Labs",
+    description:
+      "Department-wise skill lab sessions conducted in the respective laboratories.",
+    venue: "Respective Labs",
+    time: "02:00 PM - 05:00 PM",
+    group: "Group B",
+  },
+
+  // ==================== 30 AUGUST ====================
+  {
     id: 26,
     date: "2026-08-30",
     eventName: "Inauguration of the First Year 2026 Batch",
-    description: "Inauguration programme for the first-year 2026 admission batch.",
+    description:
+      "Inauguration programme for the first-year 2026 admission batch.",
     venue:
       "Poornima Palace Convention Centre, Adjacent to RVCE, No. 36/2, Pattanagere, Next to METRO Cash & Carry, Mysore Road, Bengaluru",
     group: "Group A",
@@ -261,16 +366,40 @@ export const scheduleData: ScheduleSession[] = [
     id: 27,
     date: "2026-08-30",
     eventName: "Inauguration of the First Year 2026 Batch",
-    description: "Inauguration programme for the first-year 2026 admission batch.",
+    description:
+      "Inauguration programme for the first-year 2026 admission batch.",
     venue:
       "Poornima Palace Convention Centre, Adjacent to RVCE, No. 36/2, Pattanagere, Next to METRO Cash & Carry, Mysore Road, Bengaluru",
     group: "Group B",
   },
   {
+    id: 44,
+    date: "2026-08-30",
+    eventName: "Skill Labs",
+    description:
+      "Department-wise skill lab sessions conducted in the respective laboratories.",
+    venue: "Respective Labs",
+    time: "02:00 PM - 05:00 PM",
+    group: "Group A",
+  },
+  {
+    id: 45,
+    date: "2026-08-30",
+    eventName: "Skill Labs",
+    description:
+      "Department-wise skill lab sessions conducted in the respective laboratories.",
+    venue: "Respective Labs",
+    time: "02:00 PM - 05:00 PM",
+    group: "Group B",
+  },
+
+  // ==================== 31 AUGUST ====================
+  {
     id: 28,
     date: "2026-08-31",
     eventName: "Vice Principal's Address",
-    description: "Address on expectations for academic success and student development.",
+    description:
+      "Address on expectations for academic success and student development.",
     venue: "RVCE",
     time: "09:15 AM - 10:00 AM",
     group: "Group A",
@@ -279,7 +408,8 @@ export const scheduleData: ScheduleSession[] = [
     id: 29,
     date: "2026-08-31",
     eventName: "Vice Principal's Address",
-    description: "Address on expectations for academic success and student development.",
+    description:
+      "Address on expectations for academic success and student development.",
     venue: "RVCE",
     time: "09:15 AM - 10:00 AM",
     group: "Group B",
@@ -288,7 +418,8 @@ export const scheduleData: ScheduleSession[] = [
     id: 30,
     date: "2026-08-31",
     eventName: "Academic Orientation",
-    description: "Orientation covering the programme curriculum, credits and Outcome-Based Education.",
+    description:
+      "Orientation covering the programme curriculum, credits and Outcome-Based Education.",
     venue: "RVCE",
     time: "10:15 AM - 11:00 AM",
     group: "Group A",
@@ -297,7 +428,8 @@ export const scheduleData: ScheduleSession[] = [
     id: 31,
     date: "2026-08-31",
     eventName: "Academic Orientation",
-    description: "Orientation covering the programme curriculum, credits and Outcome-Based Education.",
+    description:
+      "Orientation covering the programme curriculum, credits and Outcome-Based Education.",
     venue: "RVCE",
     time: "10:15 AM - 11:00 AM",
     group: "Group B",
@@ -306,7 +438,8 @@ export const scheduleData: ScheduleSession[] = [
     id: 32,
     date: "2026-08-31",
     eventName: "Digital Campus Orientation",
-    description: "Orientation to the digital campus and SAP ERP for student lifecycle management.",
+    description:
+      "Orientation to the digital campus and SAP ERP for student lifecycle management.",
     venue: "RVCE",
     time: "11:15 AM - 12:00 PM",
     group: "Group A",
@@ -315,7 +448,8 @@ export const scheduleData: ScheduleSession[] = [
     id: 33,
     date: "2026-08-31",
     eventName: "Digital Campus Orientation",
-    description: "Orientation to the digital campus and SAP ERP for student lifecycle management.",
+    description:
+      "Orientation to the digital campus and SAP ERP for student lifecycle management.",
     venue: "RVCE",
     time: "11:15 AM - 12:00 PM",
     group: "Group B",
@@ -324,7 +458,8 @@ export const scheduleData: ScheduleSession[] = [
     id: 34,
     date: "2026-08-31",
     eventName: "Examination Orientation",
-    description: "Orientation covering examination rules, regulations and the evaluation system.",
+    description:
+      "Orientation covering examination rules, regulations and the evaluation system.",
     venue: "RVCE",
     time: "12:15 PM - 01:00 PM",
     group: "Group A",
@@ -333,9 +468,30 @@ export const scheduleData: ScheduleSession[] = [
     id: 35,
     date: "2026-08-31",
     eventName: "Examination Orientation",
-    description: "Orientation covering examination rules, regulations and the evaluation system.",
+    description:
+      "Orientation covering examination rules, regulations and the evaluation system.",
     venue: "RVCE",
     time: "12:15 PM - 01:00 PM",
+    group: "Group B",
+  },
+  {
+    id: 46,
+    date: "2026-08-31",
+    eventName: "Skill Labs",
+    description:
+      "Department-wise skill lab sessions conducted in the respective laboratories.",
+    venue: "Respective Labs",
+    time: "02:00 PM - 05:00 PM",
+    group: "Group A",
+  },
+  {
+    id: 47,
+    date: "2026-08-31",
+    eventName: "Skill Labs",
+    description:
+      "Department-wise skill lab sessions conducted in the respective laboratories.",
+    venue: "Respective Labs",
+    time: "02:00 PM - 05:00 PM",
     group: "Group B",
   },
 ];
