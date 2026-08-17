@@ -14,8 +14,9 @@ import {
 import AnimatedContent from "../components/AnimatedContent";
 import SplitText from "../components/SplitText";
 import { scheduleData, type GroupType } from "../data/scheduleData";
-import schedulePdf from "../../V4-Student Induction Program Aug 2026.pdf";
 import { StudentSearch } from "../app/components/StudentSearch";
+
+const schedulePdf = new URL("../../V4-Student Induction Program Aug 2026.pdf", import.meta.url).href;
 
 const GROUP_STORAGE_KEY = "rvce_schedule_group";
 

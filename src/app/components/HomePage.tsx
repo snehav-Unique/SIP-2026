@@ -16,8 +16,9 @@ import SplitText from "../../components/SplitText";
 import { SpotlightCard } from "./SpotlightCard";
 import { useAnnouncements } from "../../hooks/useAnnouncements";
 import { getAnnouncementTimeRange } from "../../utils/announcementTiming";
-import schedulePdf from "../../../V4-Student Induction Program Aug 2026.pdf";
 import { StudentSearch } from "./StudentSearch";
+
+const schedulePdf = new URL("../../../V4-Student Induction Program Aug 2026.pdf", import.meta.url).href;
 
 const resourceCards = [
   { label: "Parent Helpdesk", value: "+91 80 6818 8181", icon: Phone },
