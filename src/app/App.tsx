@@ -28,7 +28,14 @@ function StartupNotice() {
             RVCE Student Induction Portal
           </h2>
           <p className="mt-2 text-sm text-stone-500 leading-6">
-            This portal will be live during the Student Induction Programme. 
+          This portal will be live during the <b>Student Induction Programme.</b>
+         <br></br>   Important Update for the Batch of 2026
+
+           <br></br> Classes are scheduled to begin from August 24, 2026.
+              Reporting Time: 9:00 AM<br></br>
+              Venue / Classroom Details: To be announced soon
+<br></br>
+            Please ensure you report on time.
           </p>
         </div>
 
