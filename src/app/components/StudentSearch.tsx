@@ -42,7 +42,7 @@ export function StudentSearch() {
           />
           <input
             type="text"
-            placeholder="e.g. 1RV24AI001"
+            placeholder="e.g. RVCE26B....."
             value={studentId}
             onChange={(e) => setStudentId(e.target.value.toUpperCase())}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}

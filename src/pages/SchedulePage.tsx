@@ -10,20 +10,11 @@ import {
   MapPin,
   RotateCcw,
   Sparkles,
-  Search,
-  X,
-  User,
-  MapPin as MapPinIcon,
-  Clock3 as ClockIcon,
-  Building2,
-  GraduationCap,
 } from "lucide-react";
 import AnimatedContent from "../components/AnimatedContent";
 import SplitText from "../components/SplitText";
 import { scheduleData, type GroupType } from "../data/scheduleData";
 import schedulePdf from "../../Sip-Shedule-2025-old.pdf";
-import { useStudentSearch } from "../hooks/useStudentSearch";
-import { downloadStudentCsv } from "../utils/downloadStudentCsv";
 import { StudentSearch } from "../app/components/StudentSearch";
 
 const GROUP_STORAGE_KEY = "rvce_schedule_group";
@@ -200,8 +191,6 @@ function EmptyScheduleState() {
 export function SchedulePage() {
   const autoScrollTargetRef = useRef<HTMLDivElement | null>(null);
   const hasAutoScrolledRef = useRef(false);
-  const [downloading, setDownloading] = useState(false);
-  const [downloadError, setDownloadError] = useState<string | null>(null);
   const [now, setNow] = useState(() => new Date());
   const [selectedGroup, setSelectedGroup] = useState<GroupType | null>(() => {
     const stored = window.localStorage.getItem(GROUP_STORAGE_KEY);
@@ -235,18 +224,6 @@ export function SchedulePage() {
   const handleSelectGroup = (group: GroupType) => {
     window.localStorage.setItem(GROUP_STORAGE_KEY, group);
     setSelectedGroup(group);
-  };
-
-  const handleDownload = async () => {
-    setDownloading(true);
-    setDownloadError(null);
-    try {
-      await downloadStudentCsv();
-    } catch {
-      setDownloadError("No student list available yet.");
-    } finally {
-      setDownloading(false);
-    }
   };
 
   useEffect(() => {
@@ -360,18 +337,7 @@ export function SchedulePage() {
               <ExternalLink size={15} />
               View PDF
             </a>
-            <button
-              onClick={handleDownload}
-              disabled={downloading}
-              className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-600 transition-colors hover:border-primary hover:text-primary disabled:opacity-50"
-            >
-              <Download size={15} />
-              {downloading ? "Downloading..." : "Download Student List"}
-            </button>
           </div>
-          {downloadError && (
-            <p className="mt-2 text-xs text-red-500">{downloadError}</p>
-          )}
         </section>
 
         {/* Timeline */}
