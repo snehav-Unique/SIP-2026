@@ -13,7 +13,7 @@ export interface ScheduleSession {
 export const scheduleData: ScheduleSession[] = [
   {
     id: 1,
-    date: "2026-07-04",
+    date: "2026-08-18",
     eventName: "SIP 2026-27 Launch",
     description: "Opening ceremony for RVCE Student Induction Programme for 2026 first-year students.",
     venue: "Main Auditorium",
@@ -22,7 +22,7 @@ export const scheduleData: ScheduleSession[] = [
   },
   {
     id: 2,
-    date: "2026-07-04",
+    date: "2026-08-18",
     eventName: "Campus to Career",
     description: "Talks on career journey and happiness, followed by departmental skill lab session 1.",
     venue: "Sir M V Hall",
@@ -31,7 +31,7 @@ export const scheduleData: ScheduleSession[] = [
   },
   {
     id: 3,
-    date: "2026-07-04",
+    date: "2026-08-18",
     eventName: "Campus to Career",
     description: "Talks on career journey and happiness, followed by departmental skill lab session 1.",
     venue: "Civil Seminar Hall",
@@ -40,7 +40,7 @@ export const scheduleData: ScheduleSession[] = [
   },
   {
     id: 4,
-    date: "2026-07-04",
+    date: "2026-08-18",
     eventName: "Skill Lab Session 1",
     description: "Department-wise classroom mapping for skill lab sessions - hands-on activity for all branches.",
     venue: "AIML / CI - Civil Seminar Hall",
@@ -49,7 +49,7 @@ export const scheduleData: ScheduleSession[] = [
   },
   {
     id: 5,
-    date: "2026-07-05",
+    date: "2026-08-19",
     eventName: "Academic Orientation",
     description: "Orientation on curriculum, OBE, first-year courses, and interaction with HoDs and faculty.",
     venue: "Sir M V Hall",
@@ -58,7 +58,7 @@ export const scheduleData: ScheduleSession[] = [
   },
   {
     id: 6,
-    date: "2026-07-05",
+    date: "2026-08-19",
     eventName: "Academic Orientation",
     description: "Orientation on curriculum, OBE, first-year courses, and interaction with HoDs and faculty.",
     venue: "Civil Seminar Hall",
@@ -67,7 +67,7 @@ export const scheduleData: ScheduleSession[] = [
   },
   {
     id: 7,
-    date: "2026-07-05",
+    date: "2026-08-19",
     eventName: "Skill Lab Session 2",
     description: "Second skill lab session focused on communication and problem-solving fundamentals.",
     venue: "Assigned Classrooms",
@@ -76,7 +76,7 @@ export const scheduleData: ScheduleSession[] = [
   },
   {
     id: 8,
-    date: "2026-07-06",
+    date: "2026-08-20",
     eventName: "Venue Allotment",
     description: "Branch-wise seminar hall allocation announced for remaining SIP sessions.",
     venue: "Notice Board / Online",
