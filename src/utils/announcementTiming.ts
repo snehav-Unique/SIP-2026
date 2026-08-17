@@ -17,8 +17,6 @@ function parseTimePart(date: Date, timePart: string) {
 }
 
 export function getAnnouncementTimeRange(announcement: Announcement) {
-  if (announcement.type === "general") return null;
-
   const baseDate = new Date(announcement.date);
   if (Number.isNaN(baseDate.getTime())) return null;
 
@@ -57,7 +55,6 @@ export function isAnnouncementCurrentOrUpcoming(
   announcement: Announcement,
   now = new Date(),
 ) {
-  if (announcement.type === "general") return true;
   const range = getAnnouncementTimeRange(announcement);
   if (!range) return false;
   return range.end.getTime() >= now.getTime();

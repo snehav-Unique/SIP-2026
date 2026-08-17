@@ -10,21 +10,11 @@ import {
   MapPin,
   RotateCcw,
   Sparkles,
-  Search,
-  X,
-  User,
-  MapPin as MapPinIcon,
-  Clock3 as ClockIcon,
-  Building2,
-  GraduationCap,
 } from "lucide-react";
 import AnimatedContent from "../components/AnimatedContent";
 import SplitText from "../components/SplitText";
 import { scheduleData, type CycleType } from "../data/scheduleData";
 import schedulePdf from "../../Sip-Shedule-2025-old.pdf";
-import { useStudentSearch } from "../hooks/useStudentSearch";
-import { downloadStudentCsv } from "../utils/downloadStudentCsv";
-import { StudentSearch } from "../app/components/StudentSearch";
 
 const CYCLE_STORAGE_KEY = "rvce_schedule_cycle";
 
@@ -132,7 +122,7 @@ function CyclePickerScreen({ onSelect }: { onSelect: (cycle: CycleType) => void 
                 Which cycle are you in?
               </p>
               <div className="mt-5 grid gap-4">
-                {(["Group A", "Group B"] as CycleType[]).map((cycle) => (
+                {(["Physics Cycle", "Chemistry Cycle"] as CycleType[]).map((cycle) => (
                   <button
                     key={cycle}
                     onClick={() => onSelect(cycle)}
@@ -140,11 +130,11 @@ function CyclePickerScreen({ onSelect }: { onSelect: (cycle: CycleType) => void 
                   >
                     <span>
                       <span className="inline-flex rounded-full bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-primary">
-                        {cycle}
+                        {cycle === "Physics Cycle" ? "Physics" : "Chemistry"}
                       </span>
                       <span className="mt-3 block text-xl font-bold text-stone-950">{cycle}</span>
                       <span className="mt-1 block text-sm leading-6 text-stone-500">
-                        View a clean timeline for this group.
+                        View a clean timeline for {cycle.toLowerCase()} students.
                       </span>
                     </span>
                     <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-stone-100 text-stone-500 transition-colors group-hover:bg-primary group-hover:text-white">
@@ -167,22 +157,22 @@ function CycleQuickSwitch({
 }: {
   selectedCycle: CycleType;
   onSelect: (cycle: CycleType) => void;
-  }) {
+}) {
   return (
     <div className="flex rounded-full border border-stone-200 bg-stone-100 p-1">
-      {(["Group A", "Group B"] as CycleType[]).map((cycle) => (
-        <button
-          key={cycle}
-          onClick={() => onSelect(cycle)}
+      {(["Physics Cycle", "Chemistry Cycle"] as CycleType[]).map((cycle) => (
+            <button
+              key={cycle}
+              onClick={() => onSelect(cycle)}
           className={`rounded-full px-3 py-1.5 text-xs font-bold transition-colors sm:px-4 ${
             selectedCycle === cycle
               ? "bg-primary text-white shadow-sm"
               : "text-stone-500 hover:text-stone-900"
           }`}
-        >
-          {cycle}
-        </button>
-      ))}
+            >
+          {cycle === "Physics Cycle" ? "Physics" : "Chemistry"}
+            </button>
+          ))}
     </div>
   );
 }
@@ -200,11 +190,9 @@ function EmptyScheduleState() {
 export function SchedulePage() {
   const autoScrollTargetRef = useRef<HTMLDivElement | null>(null);
   const hasAutoScrolledRef = useRef(false);
-  const [downloading, setDownloading] = useState(false);
-  const [downloadError, setDownloadError] = useState<string | null>(null);
   const [selectedCycle, setSelectedCycle] = useState<CycleType | null>(() => {
     const stored = window.localStorage.getItem(CYCLE_STORAGE_KEY);
-    return stored === "Group A" || stored === "Group B" ? stored : null;
+    return stored === "Physics Cycle" || stored === "Chemistry Cycle" ? stored : null;
   });
 
   const visibleSessions = useMemo(() => getVisibleSessions(selectedCycle), [selectedCycle]);
@@ -236,18 +224,6 @@ export function SchedulePage() {
     setSelectedCycle(cycle);
   };
 
-  const handleDownload = async () => {
-    setDownloading(true);
-    setDownloadError(null);
-    try {
-      await downloadStudentCsv();
-    } catch {
-      setDownloadError("No student list available yet.");
-    } finally {
-      setDownloading(false);
-    }
-  };
-
   useEffect(() => {
     if (!selectedCycle || groupedSessions.length === 0 || hasAutoScrolledRef.current) return;
 
@@ -272,7 +248,6 @@ export function SchedulePage() {
   return (
     <div className="min-h-screen px-3 py-4 sm:px-5 lg:px-8">
       <div className="mx-auto max-w-4xl space-y-6">
-        <StudentSearch />
 
         {/* Header */}
         <section className="overflow-hidden rounded-[2rem] border border-stone-200/70 bg-white/90 p-5 shadow-[0_18px_60px_rgba(28,25,23,0.08)] backdrop-blur sm:p-6">
@@ -352,18 +327,7 @@ export function SchedulePage() {
               <ExternalLink size={15} />
               View PDF
             </a>
-            <button
-              onClick={handleDownload}
-              disabled={downloading}
-              className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-600 transition-colors hover:border-primary hover:text-primary disabled:opacity-50"
-            >
-              <Download size={15} />
-              {downloading ? "Downloading..." : "Download Student List"}
-            </button>
           </div>
-          {downloadError && (
-            <p className="mt-2 text-xs text-red-500">{downloadError}</p>
-          )}
         </section>
 
         {/* Timeline */}
