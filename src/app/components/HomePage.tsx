@@ -16,7 +16,7 @@ import SplitText from "../../components/SplitText";
 import { SpotlightCard } from "./SpotlightCard";
 import { useAnnouncements } from "../../hooks/useAnnouncements";
 import { getAnnouncementTimeRange } from "../../utils/announcementTiming";
-import schedulePdf from "../../../Sip-Shedule-2025-old.pdf";
+import schedulePdf from "../../../V4-Student Induction Program Aug 2026.pdf";
 import { StudentSearch } from "./StudentSearch";
 
 const resourceCards = [
@@ -64,7 +64,7 @@ export function HomePage() {
     return att ?? null;
   }, [announcements]);
   const scheduleHref = scheduleResource?.documentUrl || scheduleResource?.fileUrl || schedulePdf;
-  const scheduleName = scheduleResource?.documentName || "Sip-Shedule-2025-old.pdf";
+  const scheduleName = scheduleResource?.documentName || "SIP-SCHEDULE-2026.pdf";
   const isImageAttachment = Boolean(scheduleResource?.documentType?.includes("image"));
 
   return (
