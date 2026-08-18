@@ -14,7 +14,7 @@ import {
 import AnimatedContent from "../components/AnimatedContent";
 import SplitText from "../components/SplitText";
 import { scheduleData, type CycleType } from "../data/scheduleData";
-import schedulePdf from "../../Sip-Shedule-2025-old.pdf";
+const schedulePdf = "/SIP_SCHEDULE.pdf";
 
 const CYCLE_STORAGE_KEY = "rvce_schedule_cycle";
 
@@ -312,7 +312,7 @@ export function SchedulePage() {
             </button>
             <a
               href={schedulePdf}
-              download="Sip-Shedule-2025-old.pdf"
+              download="SIP-SCHEDULE-2026.pdf"
               className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-transform hover:-translate-y-0.5"
             >
               <Download size={15} />
