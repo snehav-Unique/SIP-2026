@@ -115,11 +115,11 @@ function AppContent() {
               </button>
             </div>
             <div className="mt-6 flex flex-col gap-4">
-              <div className="flex flex-col gap-3 sm:flex-row">
+              <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                 <a
                   href={CIRCULAR_1_PDF}
                   download="Inauguration Circular.pdf"
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-transform hover:-translate-y-0.5"
+                  className="inline-flex min-w-[240px] items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-transform hover:-translate-y-0.5"
                 >
                   <Download size={15} />
                   Download Inauguration Circular
@@ -128,17 +128,17 @@ function AppContent() {
                   href={CIRCULAR_1_PDF}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-stone-200 bg-white px-5 py-3 text-sm font-semibold text-stone-700 transition-colors hover:border-primary hover:text-primary"
+                  className="inline-flex min-w-[240px] items-center justify-center gap-2 rounded-full border border-stone-200 bg-white px-5 py-3 text-sm font-semibold text-stone-700 transition-colors hover:border-primary hover:text-primary"
                 >
                   <ExternalLink size={15} />
                   View Inauguration Circular
                 </a>
               </div>
-              <div className="flex flex-col gap-3 sm:flex-row">
+              <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                 <a
                   href={SPORTS_CIRCULAR_PDF}
                   download="Sports Circular.pdf"
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-transform hover:-translate-y-0.5"
+                  className="inline-flex min-w-[240px] items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-transform hover:-translate-y-0.5"
                 >
                   <Download size={15} />
                   Download Sports Circular
@@ -147,7 +147,7 @@ function AppContent() {
                   href={SPORTS_CIRCULAR_PDF}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-stone-200 bg-white px-5 py-3 text-sm font-semibold text-stone-700 transition-colors hover:border-primary hover:text-primary"
+                  className="inline-flex min-w-[240px] items-center justify-center gap-2 rounded-full border border-stone-200 bg-white px-5 py-3 text-sm font-semibold text-stone-700 transition-colors hover:border-primary hover:text-primary"
                 >
                   <ExternalLink size={15} />
                   View Sports Circular
