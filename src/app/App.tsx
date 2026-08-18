@@ -73,7 +73,8 @@ function AppContent() {
   return (
     <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-[#FAFAF9]">
       <DotGrid />
-      <StartupNotice />
+      {/* Startup notice temporarily disabled */}
+      {/* <StartupNotice /> */}
       <div className="relative z-50 shrink-0 px-3 pb-3 pt-3 sm:px-5 sm:pb-4 sm:pt-4">
         <Navigation />
       </div>

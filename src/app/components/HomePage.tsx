@@ -14,6 +14,7 @@ import {
 import AnimatedContent from "../../components/AnimatedContent";
 import SplitText from "../../components/SplitText";
 import { SpotlightCard } from "./SpotlightCard";
+import { StudentSearch } from "./StudentSearch";
 import { useAnnouncements } from "../../hooks/useAnnouncements";
 import { getAnnouncementTimeRange } from "../../utils/announcementTiming";
 const schedulePdf = "/SIP_SCHEDULE_20260818_113721_0000.pdf";
@@ -79,6 +80,13 @@ export function HomePage() {
               />
               </div>
           </SpotlightCard>
+        </AnimatedContent>
+
+        <AnimatedContent distance={20} delay={0.1} duration={0.6} threshold={0.05}>
+          <div className="relative">
+            <div className="absolute -inset-1 rounded-[2rem] bg-gradient-to-r from-primary/30 to-orange-400/30 blur-lg opacity-50" />
+            <StudentSearch />
+          </div>
         </AnimatedContent>
 
         <div className="grid gap-4 lg:grid-cols-3 lg:items-start">
