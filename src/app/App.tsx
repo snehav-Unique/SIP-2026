@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router";
 import { X, ExternalLink, Download } from "lucide-react";
+import { Analytics } from "@vercel/analytics/react";
 import { Navigation } from "./components/Navigation";
 import { HomePage } from "./components/HomePage";
 import { AnnouncementsPage } from "./components/AnnouncementsPage";
@@ -216,6 +217,7 @@ export default function App() {
   return (
     <Router>
       <AppContent />
+      <Analytics />
     </Router>
   );
 }
