@@ -15,6 +15,7 @@ import ClickSpark from "./components/ClickSpark";
 const RVCE_WEBSITE = "https://linktr.ee/RVCE?utm_source=qr_code";
 const SIP_SCHEDULE_PDF = "/SIP_SCHEDULE_20260818_113721_0000.pdf";
 const CIRCULAR_1_PDF = "/CIRCULAR%201.pdf";
+const SPORTS_CIRCULAR_PDF = "/Sports%20Circular.pdf";
 
 function StartupNotice({
   onOpenCirculars,
@@ -98,10 +99,10 @@ function AppContent() {
                   Circulars
                 </p>
                 <h2 className="mt-2 text-2xl font-bold text-stone-950">
-                  Circular 1
+                  Inauguration Circular
                 </h2>
                 <p className="mt-2 text-sm leading-6 text-stone-500">
-                  Download the circular below.
+                  Download the circulars below.
                 </p>
               </div>
               <button
@@ -116,11 +117,11 @@ function AppContent() {
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <a
                 href={CIRCULAR_1_PDF}
-                download="Circular 1.pdf"
+                download="Inauguration Circular.pdf"
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-transform hover:-translate-y-0.5"
               >
                 <Download size={15} />
-                Download Circular 1
+                Download Inauguration Circular
               </a>
               <a
                 href={CIRCULAR_1_PDF}
@@ -129,7 +130,24 @@ function AppContent() {
                 className="inline-flex items-center justify-center gap-2 rounded-full border border-stone-200 bg-white px-5 py-3 text-sm font-semibold text-stone-700 transition-colors hover:border-primary hover:text-primary"
               >
                 <ExternalLink size={15} />
-                View Circular 1
+                View Inauguration Circular
+              </a>
+              <a
+                href={SPORTS_CIRCULAR_PDF}
+                download="Sports Circular.pdf"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-transform hover:-translate-y-0.5"
+              >
+                <Download size={15} />
+                Download Sports Circular
+              </a>
+              <a
+                href={SPORTS_CIRCULAR_PDF}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-stone-200 bg-white px-5 py-3 text-sm font-semibold text-stone-700 transition-colors hover:border-primary hover:text-primary"
+              >
+                <ExternalLink size={15} />
+                View Sports Circular
               </a>
             </div>
           </div>
