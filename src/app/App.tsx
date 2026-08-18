@@ -14,6 +14,8 @@ import ClickSpark from "./components/ClickSpark";
 
 const RVCE_WEBSITE = "https://linktr.ee/RVCE?utm_source=qr_code";
 const SIP_SCHEDULE_PDF = "/SIP_SCHEDULE_20260818_113721_0000.pdf";
+const FIRST_SEMESTER_ACADEMIC_CALENDAR_2026_BATCH_PDF =
+  "/First%20Semester%20Academic%20calendar%202026%20Batch.pdf";
 const CIRCULAR_1_PDF = "/CIRCULAR%201.pdf";
 const SPORTS_CIRCULAR_PDF = "/Sports%20Circular.pdf";
 
@@ -115,6 +117,25 @@ function AppContent() {
               </button>
             </div>
             <div className="mt-6 flex flex-col gap-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+                <a
+                  href={FIRST_SEMESTER_ACADEMIC_CALENDAR_2026_BATCH_PDF}
+                  download="First Semester Academic calendar 2026 Batch.pdf"
+                  className="inline-flex min-w-[240px] items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-transform hover:-translate-y-0.5"
+                >
+                  <Download size={15} />
+                  Download First Semester Academic calendar 2026 Batch
+                </a>
+                <a
+                  href={FIRST_SEMESTER_ACADEMIC_CALENDAR_2026_BATCH_PDF}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex min-w-[240px] items-center justify-center gap-2 rounded-full border border-stone-200 bg-white px-5 py-3 text-sm font-semibold text-stone-700 transition-colors hover:border-primary hover:text-primary"
+                >
+                  <ExternalLink size={15} />
+                  View First Semester Academic calendar 2026 Batch
+                </a>
+              </div>
               <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                 <a
                   href={CIRCULAR_1_PDF}
