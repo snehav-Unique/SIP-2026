@@ -16,7 +16,7 @@ import SplitText from "../../components/SplitText";
 import { SpotlightCard } from "./SpotlightCard";
 import { useAnnouncements } from "../../hooks/useAnnouncements";
 import { getAnnouncementTimeRange } from "../../utils/announcementTiming";
-const schedulePdf = "/SIP_SCHEDULE.pdf";
+const schedulePdf = "/SIP_SCHEDULE_20260818_113721_0000.pdf";
 
 const resourceCards = [
   { label: "Parent Helpdesk", value: "+91 80 6818 8181", icon: Phone },

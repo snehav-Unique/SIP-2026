@@ -13,7 +13,7 @@ import { DotGrid } from "./components/DotGrid";
 import ClickSpark from "./components/ClickSpark";
 
 const RVCE_WEBSITE = "https://linktr.ee/RVCE?utm_source=qr_code";
-const SIP_SCHEDULE_PDF = "/SIP_SCHEDULE.pdf";
+const SIP_SCHEDULE_PDF = "/SIP_SCHEDULE_20260818_113721_0000.pdf";
 
 function StartupNotice() {
   return (

@@ -14,7 +14,7 @@ import {
 import AnimatedContent from "../components/AnimatedContent";
 import SplitText from "../components/SplitText";
 import { scheduleData, type CycleType } from "../data/scheduleData";
-const schedulePdf = "/SIP_SCHEDULE.pdf";
+const schedulePdf = "/SIP_SCHEDULE_20260818_113721_0000.pdf";
 
 const CYCLE_STORAGE_KEY = "rvce_schedule_cycle";
 
