@@ -99,7 +99,7 @@ function AppContent() {
                   Circulars
                 </p>
                 <h2 className="mt-2 text-2xl font-bold text-stone-950">
-                  Inauguration Circular
+                  Important Circulars
                 </h2>
                 <p className="mt-2 text-sm leading-6 text-stone-500">
                   Download the circulars below.
