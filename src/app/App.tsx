@@ -40,11 +40,17 @@ function StartupNotice({
             Important Update for the Batch of 2026
             <br />
             Classes are scheduled to begin from August 24, 2026.
-            Reporting Time: 9:00 AM
+            Reporting Time: 9:00 AM 
             <br />
             Venue / Classroom Details: To be announced soon
             <br />
-            Please ensure you report on time.
+            
+          </p>
+          
+          <p className="mt-2 text-sm leading-6 text-stone-500">
+           <b>Please note</b> : The programme is scheduled throughout the day. Skill Lab sessions will be conducted from 2:00 PM to 5:00 PM in the respective departments.
+<br></br>
+            Please report: &nbsp; by 9:00 AM and plan to be available for the full-day induction programme.
           </p>
         </div>
 
