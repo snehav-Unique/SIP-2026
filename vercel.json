@@ -1,5 +1,9 @@
 {
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "https://sip-dashboard-2026.codingclubrvce.com/",
+      "permanent": false
+    }
   ]
 }
