@@ -26,7 +26,7 @@ function StartupNotice() {
           </h2>
           <p className="mt-4 text-sm leading-7 text-stone-600 sm:text-base">
             Dear Parents and Guardians, the Student Induction Programme portal is
-            now live. You may proceed to the official SIP website to log in and
+            now live. You may proceed to the official SIP website to view and
             access the portal.
           </p>
           <p className="mt-3 text-sm leading-7 text-stone-600 sm:text-base">
@@ -48,7 +48,7 @@ function StartupNotice() {
             Open SIP Portal
           </a>
           <p className="text-center text-xs leading-5 text-stone-400">
-            Please note: the portal is now available for login at the official SIP
+            Please note: the portal is now available for access at the official SIP
             website.
           </p>
         </div>
